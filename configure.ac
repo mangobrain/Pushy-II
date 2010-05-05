@@ -46,7 +46,7 @@ AC_DEFINE_UNQUOTED(
 
 dnl # Use pkg-config to find various dependencies
 PKG_PROG_PKG_CONFIG
-PKG_CHECK_MODULES([SDL], [sdl = 1.2])
+PKG_CHECK_MODULES([SDL], [sdl >= 1.2])
 
 dnl # All done.  Spit out the result.
 AC_CONFIG_FILES([
