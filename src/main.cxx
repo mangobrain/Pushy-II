@@ -31,10 +31,10 @@
 
 // Library
 #include <SDL.h>
-#include <SDL_framerate.h>
 #include <getopt.h>
 
 // Local
+#include "TileSet.hxx"
 
 //
 // Implementation
@@ -102,6 +102,32 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	std::cout << "Hello, world!" << std::endl;
+	//
+	// Initialise SDL
+	//
+
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
+	{
+		std::cerr << "Could not initialise SDL: " << SDL_GetError() << std::endl;
+		return 1;
+	}
+
+	//
+	// Load in resources
+	//
+	TileSet t(__P2_PKGDATADIR "/LegoCht", 32, 32);
+
+	//
+	// XXX Prototype code XXX
+	//
+	std::cout << "Number of tiles: " << t.size() << std::endl;
+	SDL_Surface *screen = SDL_SetVideoMode(640, 384, 24, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	for (int i = 0; i < t.size(); ++i)
+	{
+		SDL_BlitSurface(t[i], NULL, screen, NULL);
+		SDL_Flip(screen);
+		SDL_Delay(1000);
+	}
+
 	return 0;
 }
