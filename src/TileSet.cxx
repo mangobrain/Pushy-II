@@ -90,9 +90,9 @@ TileSet::TileSet(const char *filename, int width, int height)
 			{
 				uint32_t *pixel = (uint32_t*)(((char*)tile->pixels) + rowstart + xoff);
 				size_t boff = (y * width * 4) + (x * 4);
-				*pixel |= (ubuff[boff] << tile->format->Rshift)
-					| (ubuff[boff + 1] << tile->format->Gshift)
-					| (ubuff[boff + 2] << tile->format->Bshift);
+				*pixel |= ((ubuff[boff] >> tile->format->Rloss) << tile->format->Rshift)
+					| ((ubuff[boff + 1] >> tile->format->Gloss) << tile->format->Gshift)
+					| ((ubuff[boff + 2] >> tile->format->Bloss) << tile->format->Bshift);
 				xoff += tile->format->BytesPerPixel;
 			}
 		}
