@@ -14,3 +14,10 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
+
+bin_PROGRAMS = pushy2
+
+pushy2_SOURCES = main.cxx
+pushy2_CXXFLAGS = $(SDL_CFLAGS) $(AM_CXXFLAGS)
+pushy2_CPPFLAGS = -D__P2_PKGDATADIR='"$(pkgdatadir)"' $(AM_CPPFLAGS)
+pushy2_LDFLAGS = $(SDL_LIBS) $(AM_LDFLAGS)

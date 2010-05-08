@@ -39,14 +39,21 @@ AC_CONFIG_HEADERS([config.h])
 
 dnl # Output the command-line options given to this script
 AC_DEFINE_UNQUOTED(
-	[__PII_CONFIGURE_OPTS],
+	[__P2_CONFIGURE_OPTS],
 	["$ac_configure_args"],
 	[Options given to ./configure]
 )
 
 dnl # Use pkg-config to find various dependencies
 PKG_PROG_PKG_CONFIG
-PKG_CHECK_MODULES([SDL], [sdl >= 1.2])
+PKG_CHECK_MODULES([SDL], [sdl >= 1.2 SDL_gfx >= 2.0])
+
+dnl # We use getopt_long for parsing our command-line options
+AC_CHECK_HEADERS_ONCE([getopt.h])
+AS_IF(
+	[test "x$ac_cv_header_getopt_h" != "xyes"],
+	[AC_MSG_ERROR([We need getopt.h for option parsing!])]
+)
 
 dnl # All done.  Spit out the result.
 AC_CONFIG_FILES([
