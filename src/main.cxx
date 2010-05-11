@@ -26,8 +26,11 @@
 
 // Language
 #include <iostream>
+#include <cerrno>
+#include <cstring>
 
 // System
+#include <unistd.h>
 
 // Library
 #include <SDL.h>
@@ -35,6 +38,7 @@
 
 // Local
 #include "TileSet.hxx"
+#include "LevelSet.hxx"
 
 //
 // Implementation
@@ -115,18 +119,86 @@ int main(int argc, char *argv[])
 	//
 	// Load in resources
 	//
-	TileSet t(__P2_PKGDATADIR "/LegoCht", 32, 32);
+	if (chdir(__P2_PKGDATADIR) < 0)
+	{
+		std::cerr << "Could not change working directory to \""
+			<< __P2_PKGDATADIR << "\": " << strerror(errno);
+		return 1;
+	}
+	LevelSet l("LegoLev");
+	const TileSet &t(l.getTiles());
 
 	//
 	// XXX Prototype code XXX
 	//
+	#define __TEST_LEVEL 2
+	std::cout << "Number of levels: " << l.size() << std::endl;
 	std::cout << "Number of tiles: " << t.size() << std::endl;
-	SDL_Surface *screen = SDL_SetVideoMode(640, 384, 24, SDL_HWSURFACE | SDL_DOUBLEBUF);
-	for (int i = 0; i < t.size(); ++i)
+	std::cout << "Number of sprites: " << l.getSprites().size() << std::endl;
+	SDL_Surface *screen = SDL_SetVideoMode(
+		__TILE_WIDTH * __LEVEL_WIDTH,
+		__TILE_HEIGHT * __LEVEL_HEIGHT,
+		24, SDL_HWSURFACE | SDL_DOUBLEBUF
+	);
+	uint8_t playeranimoffset = 0;
+	uint8_t itemanimoffset = 0;
+	bool up = true;
+	for (int frames = 0; frames < 100; ++frames)
 	{
-		SDL_BlitSurface(t[i], NULL, screen, NULL);
+		const uint8_t *title = l[__TEST_LEVEL].tilemap;
+		for (int y = 0; y < __LEVEL_HEIGHT; ++y)
+		{
+			for (int x = 0; x < __LEVEL_WIDTH; ++x)
+			{
+				SDL_Rect rect = {
+					x * __TILE_WIDTH,
+					y * __TILE_HEIGHT,
+					0, 0
+				};
+				SDL_BlitSurface(t[title[(y * __LEVEL_WIDTH) + x]], NULL, screen, &rect);
+			}
+		}
+		for (uint8_t i = 0; i < l[__TEST_LEVEL].num_sprites; ++i)
+		{
+			SDL_Rect rect = {
+				l[__TEST_LEVEL].spriteinfo[i].x * __TILE_WIDTH,
+				l[__TEST_LEVEL].spriteinfo[i].y * __TILE_HEIGHT,
+				0, 0
+			};
+			uint8_t sprite_index = l[__TEST_LEVEL].spriteinfo[i].index;
+			SDL_Surface *sprite;
+			switch (sprite_index)
+			{
+				case 0:
+					// Player
+					sprite = l.getPlayerSprites()[playeranimoffset];
+					break;
+				case 1:
+					// Crate
+					// 0-6 = on fire, 7 = defused
+					sprite = l.getSprites()[itemanimoffset];
+					break;
+				default:
+					// Ball
+					// 8-14 = on fire, 15-19 = defused
+					sprite = l.getSprites()[itemanimoffset + 8];
+			}
+			SDL_BlitSurface(sprite, NULL, screen, &rect);
+		}
 		SDL_Flip(screen);
-		SDL_Delay(1000);
+		SDL_Delay(60);
+		if (++playeranimoffset == 6)
+			playeranimoffset = 0;
+		if (up)
+		{
+			if (++itemanimoffset == 6)
+				up = false;
+		}
+		else
+		{
+			if (--itemanimoffset == 0)
+				up = true;
+		}
 	}
 
 	return 0;
