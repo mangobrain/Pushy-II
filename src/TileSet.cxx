@@ -43,7 +43,7 @@
 // Implementation
 //
 
-TileSet::TileSet(const char *filename, int width, int height)
+TileSet::TileSet(const char *filename, int width, int height, bool colorkey)
 {
 	// Calculate size in tileset file of a single tile
 	// Input files are raw 32-bit bitmaps
@@ -79,6 +79,8 @@ TileSet::TileSet(const char *filename, int width, int height)
 				.append(SDL_GetError())
 			);
 		}
+		if (colorkey)
+			SDL_SetColorKey(tile, SDL_SRCCOLORKEY, SDL_MapRGB(tile->format, 0x00, 0xff, 0x00));
 
 		// Convert the data to the surface's pixel format and write it out
 		SDL_FillRect(tile, NULL, SDL_MapRGB(tile->format, 0x00, 0x00, 0x00));
@@ -90,9 +92,16 @@ TileSet::TileSet(const char *filename, int width, int height)
 			{
 				uint32_t *pixel = (uint32_t*)(((char*)tile->pixels) + rowstart + xoff);
 				size_t boff = (y * width * 4) + (x * 4);
-				*pixel |= ((ubuff[boff] >> tile->format->Rloss) << tile->format->Rshift)
-					| ((ubuff[boff + 1] >> tile->format->Gloss) << tile->format->Gshift)
-					| ((ubuff[boff + 2] >> tile->format->Bloss) << tile->format->Bshift);
+				if (colorkey && ubuff[boff + 3])
+				{
+					*pixel |= tile->format->colorkey;
+				}
+				else
+				{
+					*pixel |= ((ubuff[boff] >> tile->format->Rloss) << tile->format->Rshift)
+						| ((ubuff[boff + 1] >> tile->format->Gloss) << tile->format->Gshift)
+						| ((ubuff[boff + 2] >> tile->format->Bloss) << tile->format->Bshift);
+				}
 				xoff += tile->format->BytesPerPixel;
 			}
 		}

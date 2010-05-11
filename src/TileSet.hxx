@@ -25,7 +25,7 @@
 class TileSet
 {
 	public:
-		TileSet(const char *filename, int width, int height);
+		TileSet(const char *filename, int width, int height, bool colorkey = false);
 		~TileSet();
 
 		SDL_Surface *operator[](std::vector<SDL_Surface*>::size_type index) const
