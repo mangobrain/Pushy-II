@@ -84,6 +84,16 @@ class LevelSet
 		{
 			return _titlescreen;
 		};
+		
+		uint8_t firstFloorTile() const
+		{
+			return _first_floor_tile;
+		};
+		
+		uint8_t firstCrossTile() const
+		{
+			return _first_cross_tile;
+		};
 
 	private:
 		std::auto_ptr<TileSet> _tileset;
