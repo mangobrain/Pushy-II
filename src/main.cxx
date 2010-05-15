@@ -39,6 +39,7 @@
 // Local
 #include "TileSet.hxx"
 #include "LevelSet.hxx"
+#include "GameObjects.hxx"
 
 //
 // Implementation
