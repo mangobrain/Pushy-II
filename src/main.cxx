@@ -37,6 +37,7 @@
 #include <getopt.h>
 
 // Local
+#include "Constants.hxx"
 #include "TileSet.hxx"
 #include "LevelSet.hxx"
 #include "GameObjects.hxx"

@@ -23,12 +23,6 @@
 #include <string>
 #include <cstddef>
 
-#define __MAX_SPRITES_PER_LEVEL 20
-#define __LEVEL_WIDTH 20
-#define __LEVEL_HEIGHT 12
-#define __TILE_WIDTH 32
-#define __TILE_HEIGHT 32
-
 // Structure representing one sprite in a level
 struct SpriteInfo
 {

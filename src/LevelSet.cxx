@@ -36,6 +36,7 @@
 #include <SDL.h>
 
 // Local
+#include "Constants.hxx"
 #include "TileSet.hxx"
 #include "LevelSet.hxx"
 
