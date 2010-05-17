@@ -32,9 +32,54 @@
 #include <SDL.h>
 
 // Local
+#include "Constants.hxx"
 #include "TileSet.hxx"
 #include "GameObjects.hxx"
 
 //
 // Implementation
 //
+
+GameObject::GameObject(TileSet *sprites, const uint8_t *tilemap,
+	uint8_t x, uint8_t y, GameObject *objects,
+	uint8_t first_floor_tile, uint8_t first_cross_tile)
+	: _sprites(sprites), _x(x), _y(y), _objects(objects),
+	_tilemap(tilemap), _first_floor_tile(first_floor_tile),
+	_first_cross_tile(first_cross_tile)
+{
+}
+
+bool GameObject::tileIsEmpty(uint8_t x, uint8_t y) const
+{
+	// Floor and cross tiles can be moved into
+	return (_tilemap[(y * __LEVEL_WIDTH) + x] >= _first_floor_tile);
+}
+
+bool GameObject::tileIsCross(uint8_t x, uint8_t y) const
+{
+	return (_tilemap[(y * __LEVEL_WIDTH) + x] >= _first_cross_tile);
+}
+
+bool PushableObject::canMove(Direction d) const
+{
+	// TODO Check _gameobjects for emptiness too
+	switch (d)
+	{
+		case Up:
+			if (_y == 0)
+				return false;
+			return tileIsEmpty(_x, _y - 1);
+		case Down:
+			if (_y == __LEVEL_HEIGHT)
+				return false;
+			return tileIsEmpty(_x, _y + 1);
+		case Left:
+			if (_x == 0)
+				return false;
+			return tileIsEmpty(_x - 1, _y);
+		case Right:
+			if (_x == __LEVEL_WIDTH)
+				return false;
+			return tileIsEmpty(_x + 1, _y);
+	}
+}

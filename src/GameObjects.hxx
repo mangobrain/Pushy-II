@@ -27,13 +27,18 @@ class GameObject
 		virtual ~GameObject() {};
 
 	protected:
+		bool tileIsEmpty(uint8_t x, uint8_t y) const;
+		bool tileIsCross(uint8_t x, uint8_t y) const;
+
 		TileSet *_sprites;
-		const uint8_t _first_floor_tile;
-		const uint8_t _first_cross_tile;
-		const uint8_t *_tilemap;
-		GameObject *_objects;
 		uint8_t _x;
 		uint8_t _y;
+		GameObject *_objects;
+
+	private:
+		const uint8_t *_tilemap;
+		const uint8_t _first_floor_tile;
+		const uint8_t _first_cross_tile;
 };
 
 enum Direction
