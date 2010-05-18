@@ -41,7 +41,7 @@
 //
 
 GameObject::GameObject(TileSet *sprites, const uint8_t *tilemap,
-	uint8_t x, uint8_t y, GameObject *objects,
+	uint8_t x, uint8_t y, GameObject **objects,
 	uint8_t first_floor_tile, uint8_t first_cross_tile)
 	: _sprites(sprites), _x(x), _y(y), _objects(objects),
 	_tilemap(tilemap), _first_floor_tile(first_floor_tile),
@@ -62,24 +62,39 @@ bool GameObject::tileIsCross(uint8_t x, uint8_t y) const
 
 bool PushableObject::canMove(Direction d) const
 {
-	// TODO Check _gameobjects for emptiness too
+	uint8_t cx = _x;
+	uint8_t cy = _y;
 	switch (d)
 	{
 		case Up:
-			if (_y == 0)
+			if (cy == 0)
 				return false;
-			return tileIsEmpty(_x, _y - 1);
+			--cy;
+			break;
 		case Down:
-			if (_y == __LEVEL_HEIGHT)
+			if (cy == __LEVEL_HEIGHT)
 				return false;
-			return tileIsEmpty(_x, _y + 1);
+			++cy;
+			break;
 		case Left:
-			if (_x == 0)
+			if (cx == 0)
 				return false;
-			return tileIsEmpty(_x - 1, _y);
+			--cx;
+			break;
 		case Right:
-			if (_x == __LEVEL_WIDTH)
+			if (cx == __LEVEL_WIDTH)
 				return false;
-			return tileIsEmpty(_x + 1, _y);
+			++cx;
 	}
+	return (tileIsEmpty(cx, cy) && !_objects[(cy * __LEVEL_WIDTH) + cx]);
+}
+
+bool Ball::rolls() const
+{
+	return true;
+}
+
+bool Box::rolls() const
+{
+	return false;
 }

@@ -21,7 +21,7 @@ class GameObject
 {
 	public:
 		GameObject(TileSet *sprites, const uint8_t *tilemap,
-			uint8_t x, uint8_t y, GameObject *objects,
+			uint8_t x, uint8_t y, GameObject **objects,
 			uint8_t first_floor_tile, uint8_t first_cross_tile);
 		virtual void render(SDL_Surface *screen) const = 0;
 		virtual ~GameObject() {};
@@ -33,7 +33,7 @@ class GameObject
 		TileSet *_sprites;
 		uint8_t _x;
 		uint8_t _y;
-		GameObject *_objects;
+		GameObject **_objects;
 
 	private:
 		const uint8_t *_tilemap;
