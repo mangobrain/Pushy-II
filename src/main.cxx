@@ -46,6 +46,13 @@
 // Implementation
 //
 
+int event_filter(const SDL_Event *event)
+{
+	if (event->type == SDL_KEYDOWN || event->type == SDL_QUIT)
+		return 1;
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	//
@@ -134,20 +141,79 @@ int main(int argc, char *argv[])
 	// XXX Prototype code XXX
 	//
 	#define __TEST_LEVEL 2
-	std::cout << "Number of levels: " << l.size() << std::endl;
-	std::cout << "Number of tiles: " << t.size() << std::endl;
-	std::cout << "Number of sprites: " << l.getSprites().size() << std::endl;
 	SDL_Surface *screen = SDL_SetVideoMode(
 		__TILE_WIDTH * __LEVEL_WIDTH,
 		__TILE_HEIGHT * __LEVEL_HEIGHT,
 		24, SDL_HWSURFACE | SDL_DOUBLEBUF
 	);
-	uint8_t playeranimoffset = 0;
-	uint8_t itemanimoffset = 0;
-	bool up = true;
-	for (int frames = 0; frames < 100; ++frames)
+
+	// Create GameObjects array
+	GameObject *objects[__LEVEL_WIDTH * __LEVEL_HEIGHT];
+	Player *p = NULL;
+	memset(objects, NULL, sizeof(objects));
+	for (uint8_t i = 0; i < l[__TEST_LEVEL].num_sprites; ++i)
 	{
-		const uint8_t *title = l[__TEST_LEVEL].tilemap;
+		const SpriteInfo *s = &(l[__TEST_LEVEL].spriteinfo[i]);
+		GameObject **o = &(objects[(s->y * __LEVEL_WIDTH) + s->x]);
+		switch (s->index)
+		{
+			case 0:
+				*o = new Player(&(l.getPlayerSprites()),
+					l[__TEST_LEVEL].tilemap, s->x, s->y, objects,
+					l.firstFloorTile(), l.firstCrossTile());
+				p = (Player*) *o;
+				break;
+			case 1:
+				*o = new Box(&(l.getSprites()),
+					l[__TEST_LEVEL].tilemap, s->x, s->y, objects,
+					l.firstFloorTile(), l.firstCrossTile());
+				break;
+			case 2:
+				*o = new Ball(&(l.getSprites()),
+					l[__TEST_LEVEL].tilemap, s->x, s->y, objects,
+					l.firstFloorTile(), l.firstCrossTile());
+		}
+	}
+
+	bool quit = false;
+	SDL_SetEventFilter(event_filter);
+	while (!quit)
+	{
+		// Process events
+		SDL_Event e;
+		while (SDL_PollEvent(&e))
+		{
+			switch (e.type)
+			{
+				case SDL_KEYDOWN:
+					switch (e.key.keysym.sym)
+					{
+						case SDLK_ESCAPE:
+							quit = true;
+							break;
+						case SDLK_UP:
+							p->move(Up);
+							break;
+						case SDLK_DOWN:
+							p->move(Down);
+							break;
+						case SDLK_LEFT:
+							p->move(Left);
+							break;
+						case SDLK_RIGHT:
+							p->move(Right);
+							break;
+						default:
+							break;
+					}
+					break;
+				case SDL_QUIT:
+					quit = true;
+			}
+		}
+
+		// Render background & game objects
+		const uint8_t *tilemap = l[__TEST_LEVEL].tilemap;
 		for (int y = 0; y < __LEVEL_HEIGHT; ++y)
 		{
 			for (int x = 0; x < __LEVEL_WIDTH; ++x)
@@ -157,50 +223,15 @@ int main(int argc, char *argv[])
 					y * __TILE_HEIGHT,
 					0, 0
 				};
-				SDL_BlitSurface(t[title[(y * __LEVEL_WIDTH) + x]], NULL, screen, &rect);
+				SDL_BlitSurface(t[tilemap[(y * __LEVEL_WIDTH) + x]],
+					NULL, screen, &rect);
+				GameObject *o;
+				if ((o = objects[(y * __LEVEL_WIDTH) + x]))
+					o->render(screen);
 			}
-		}
-		for (uint8_t i = 0; i < l[__TEST_LEVEL].num_sprites; ++i)
-		{
-			SDL_Rect rect = {
-				l[__TEST_LEVEL].spriteinfo[i].x * __TILE_WIDTH,
-				l[__TEST_LEVEL].spriteinfo[i].y * __TILE_HEIGHT,
-				0, 0
-			};
-			uint8_t sprite_index = l[__TEST_LEVEL].spriteinfo[i].index;
-			SDL_Surface *sprite;
-			switch (sprite_index)
-			{
-				case 0:
-					// Player
-					sprite = l.getPlayerSprites()[playeranimoffset];
-					break;
-				case 1:
-					// Crate
-					// 0-6 = on fire, 7 = defused
-					sprite = l.getSprites()[itemanimoffset];
-					break;
-				default:
-					// Ball
-					// 8-14 = on fire, 15-19 = defused
-					sprite = l.getSprites()[itemanimoffset + 8];
-			}
-			SDL_BlitSurface(sprite, NULL, screen, &rect);
 		}
 		SDL_Flip(screen);
 		SDL_Delay(60);
-		if (++playeranimoffset == 6)
-			playeranimoffset = 0;
-		if (up)
-		{
-			if (++itemanimoffset == 6)
-				up = false;
-		}
-		else
-		{
-			if (--itemanimoffset == 0)
-				up = true;
-		}
 	}
 
 	return 0;

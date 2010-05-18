@@ -20,17 +20,17 @@
 class GameObject
 {
 	public:
-		GameObject(TileSet *sprites, const uint8_t *tilemap,
+		GameObject(const TileSet *sprites, const uint8_t *tilemap,
 			uint8_t x, uint8_t y, GameObject **objects,
 			uint8_t first_floor_tile, uint8_t first_cross_tile);
-		virtual void render(SDL_Surface *screen) const = 0;
+		virtual void render(SDL_Surface *screen) = 0;
 		virtual ~GameObject() {};
 
 	protected:
 		bool tileIsEmpty(uint8_t x, uint8_t y) const;
 		bool tileIsCross(uint8_t x, uint8_t y) const;
 
-		TileSet *_sprites;
+		const TileSet *_sprites;
 		uint8_t _x;
 		uint8_t _y;
 		GameObject **_objects;
@@ -52,17 +52,21 @@ enum Direction
 class AnimableObject
 {
 	public:
+		AnimableObject(uint8_t ax, uint8_t ay);
 		virtual ~AnimableObject() {};
 	protected:
-		uint8_t _anim_x;
-		uint8_t _anim_y;
+		uint32_t _anim_x;
+		uint32_t _anim_y;
 		uint8_t _anim_index;
 		uint8_t _anim_state;
 };
 
-class PushableObject: public GameObject, AnimableObject
+class PushableObject: public GameObject, public AnimableObject
 {
 	public:
+		PushableObject(const TileSet *sprites, const uint8_t *tilemap,
+			uint8_t x, uint8_t y, GameObject **objects,
+			uint8_t first_floor_tile, uint8_t first_cross_tile);
 		bool canMove(Direction d) const;
 		virtual bool rolls() const = 0;
 		virtual void push(Direction d) = 0;
@@ -72,23 +76,32 @@ class PushableObject: public GameObject, AnimableObject
 class Ball: public PushableObject
 {
 	public:
+		Ball(const TileSet *sprites, const uint8_t *tilemap,
+			uint8_t x, uint8_t y, GameObject **objects,
+			uint8_t first_floor_tile, uint8_t first_cross_tile);
 		bool rolls() const;
 		void push(Direction d);
-		void render(SDL_Surface *screen) const;
+		void render(SDL_Surface *screen);
 };
 
 class Box: public PushableObject
 {
 	public:
+		Box(const TileSet *sprites, const uint8_t *tilemap,
+			uint8_t x, uint8_t y, GameObject **objects,
+			uint8_t first_floor_tile, uint8_t first_cross_tile);
 		bool rolls() const;
 		void push(Direction d);
-		void render(SDL_Surface *screen) const;
+		void render(SDL_Surface *screen);
 };
 
 class Player: public GameObject, AnimableObject
 {
 	public:
-		void render(SDL_Surface *screen) const;
+		Player(const TileSet *sprites, const uint8_t *tilemap,
+			uint8_t x, uint8_t y, GameObject **objects,
+			uint8_t first_floor_tile, uint8_t first_cross_tile);
+		void render(SDL_Surface *screen);
 		void move(Direction d);		
 };
 
