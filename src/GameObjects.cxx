@@ -117,7 +117,7 @@ Player::Player(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
 	uint8_t first_floor_tile, uint8_t first_cross_tile)
 	:GameObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
-	AnimableObject(x, y)
+	AnimableObject(x, y), _speed(2)
 {}
 
 bool Ball::rolls() const
@@ -229,9 +229,15 @@ void Ball::render(SDL_Surface *screen)
 
 void Box::render(SDL_Surface *screen)
 {
-	// TODO Slide to destination
-	_anim_x = _x * __TILE_WIDTH;
-	_anim_y = _y * __TILE_HEIGHT;
+	// Slide to destination
+	if (_anim_x > (uint32_t)(_x) * __TILE_WIDTH)
+		--_anim_x;
+	else if (_anim_x < (uint32_t)(_x) * __TILE_WIDTH)
+		++_anim_x;
+	else if (_anim_y > (uint32_t)(_y) * __TILE_HEIGHT)
+		--_anim_y;
+	else if (_anim_y < (uint32_t)(_y) * __TILE_HEIGHT)
+		++_anim_y;
 	// TODO Check (when arrived) whether destination is a cross, and defuse
 	// TODO Update defusion counter
 	// TODO Animate fused/defused
@@ -246,9 +252,18 @@ void Box::render(SDL_Surface *screen)
 
 void Player::render(SDL_Surface *screen)
 {
-	// TODO Slide to destination
-	_anim_x = _x * __TILE_WIDTH;
-	_anim_y = _y * __TILE_HEIGHT;
+	// Slide to destination
+	if (_anim_x > (uint32_t)(_x) * __TILE_WIDTH)
+		_anim_x -= _speed;
+	else if (_anim_x < (uint32_t)(_x) * __TILE_WIDTH)
+		_anim_x += _speed;
+	else if (_anim_y > (uint32_t)(_y) * __TILE_HEIGHT)
+		_anim_y -= _speed;
+	else if (_anim_y < (uint32_t)(_y) * __TILE_HEIGHT)
+		_anim_y += _speed;
+	else
+		// We've arrived - we have finished pushing for now
+		_speed = 2;
 	// TODO Animate moving/pushing/idling
 	SDL_Rect rect = {
 		_anim_x, _anim_y,
@@ -291,7 +306,11 @@ void Player::move(Direction d)
 			if (o)
 			{
 				if (((PushableObject*)o)->canMove(d))
+				{
 					((PushableObject*)o)->push(d);
+					// We're straining - reduce movement speed
+					_speed = 1;
+				}
 				else
 					return;
 			}

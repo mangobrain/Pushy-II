@@ -102,7 +102,9 @@ class Player: public GameObject, AnimableObject
 			uint8_t x, uint8_t y, GameObject **objects,
 			uint8_t first_floor_tile, uint8_t first_cross_tile);
 		void render(SDL_Surface *screen);
-		void move(Direction d);		
+		void move(Direction d);
+	private:
+		uint32_t _speed;
 };
 
 #endif
