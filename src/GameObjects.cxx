@@ -104,7 +104,8 @@ AnimableObject::AnimableObject(uint8_t ax, uint8_t ay)
 Ball::Ball(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
 	uint8_t first_floor_tile, uint8_t first_cross_tile)
-	:PushableObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile)
+	:PushableObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
+	_rolling(false), _speed(1), _roll_momentum(0)
 {}
 
 Box::Box(const TileSet *sprites, const uint8_t *tilemap,
@@ -117,7 +118,8 @@ Player::Player(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
 	uint8_t first_floor_tile, uint8_t first_cross_tile)
 	:GameObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
-	AnimableObject(x, y), _speed(2)
+	AnimableObject(x, y), _speed(2), _busy(false), _push_momentum(0), _anim_loop(0),
+	_anim_state(0), _straining(false)
 {}
 
 bool Ball::rolls() const
@@ -178,6 +180,9 @@ void Ball::push(Direction d)
 	_objects[(cy * __LEVEL_WIDTH) + cx] = this;
 	_x = cx;
 	_y = cy;
+	_rolling = true;
+	_speed = 1;
+	_roll_momentum = 0;
 }
 
 bool Box::rolls() const
@@ -212,9 +217,24 @@ void Box::push(Direction d)
 
 void Ball::render(SDL_Surface *screen)
 {
-	// TODO Slide to destination
-	_anim_x = _x * __TILE_WIDTH;
-	_anim_y = _y * __TILE_HEIGHT;
+	if (_rolling)
+	{
+		// Slide to destination
+		if (_anim_x > (uint32_t)(_x) * __TILE_WIDTH)
+			_anim_x -= _speed;
+		else if (_anim_x < (uint32_t)(_x) * __TILE_WIDTH)
+			_anim_x += _speed;
+		else if (_anim_y > (uint32_t)(_y) * __TILE_HEIGHT)
+			_anim_y -= _speed;
+		else if (_anim_y < (uint32_t)(_y) * __TILE_HEIGHT)
+			_anim_y += _speed;
+		else
+			_rolling = false;
+		// First half of first square is slid to at
+		// half normal speed, the momentum picks up
+		if (++_roll_momentum >= __TILE_WIDTH / 2)
+			_speed = 2;
+	}
 	// TODO Check (when arrived) whether destination is a cross, and defuse
 	// TODO Update defusion counter
 	// TODO Animate fused/defused
@@ -252,29 +272,62 @@ void Box::render(SDL_Surface *screen)
 
 void Player::render(SDL_Surface *screen)
 {
-	// Slide to destination
-	if (_anim_x > (uint32_t)(_x) * __TILE_WIDTH)
-		_anim_x -= _speed;
-	else if (_anim_x < (uint32_t)(_x) * __TILE_WIDTH)
-		_anim_x += _speed;
-	else if (_anim_y > (uint32_t)(_y) * __TILE_HEIGHT)
-		_anim_y -= _speed;
-	else if (_anim_y < (uint32_t)(_y) * __TILE_HEIGHT)
-		_anim_y += _speed;
-	else
-		// We've arrived - we have finished pushing for now
-		_speed = 2;
-	// TODO Animate moving/pushing/idling
+	if (_busy)
+	{
+		// Slide to destination
+		if (_anim_x > (uint32_t)(_x) * __TILE_WIDTH)
+			_anim_x -= _speed;
+		else if (_anim_x < (uint32_t)(_x) * __TILE_WIDTH)
+			_anim_x += _speed;
+		else if (_anim_y > (uint32_t)(_y) * __TILE_HEIGHT)
+			_anim_y -= _speed;
+		else if (_anim_y < (uint32_t)(_y) * __TILE_HEIGHT)
+			_anim_y += _speed;
+		else
+		{
+			// We've arrived - we have finished pushing for now
+			_speed = 2;
+			_busy = false;
+			_anim_state = 0;
+			_straining = false;
+		}
+		// If we're pushing a rolling object, eventually
+		// it picks up speed and we can move more freely
+		if (_push_momentum > 0)
+		{
+			if (--_push_momentum == 0)
+			{
+				_speed = 2;
+				_straining = false;
+			}
+		}
+	}
+	// Animate up/down/left/right loops
+	// All are 6 frames long, but go too quickly at 30fps,
+	// so count to 12 and only step every other frame
+	if (++_anim_loop == 12)
+		_anim_loop = 0;
 	SDL_Rect rect = {
 		_anim_x, _anim_y,
 		0, 0
 	};
-	SDL_Surface *sprite = (*_sprites)[_anim_index];
+	SDL_Surface *sprite = (*_sprites)[_anim_index + (_anim_loop / 2) + _anim_state + (_straining ? 24 : 0)];
 	SDL_BlitSurface(sprite, NULL, screen, &rect);
+	// If player pushed against a wall, only stay in the left/right/up/down
+	// animation for one frame, unless they keep the key held down
+	if (!_busy)
+	{
+		_anim_state = 0;
+		_straining = false;
+	}
 }
 
 void Player::move(Direction d)
 {
+	// Can't change direction whilst moving
+	if (_busy)
+		return;
+
 	int cx = _x;
 	int cy = _y;
 	switch (d)
@@ -282,18 +335,26 @@ void Player::move(Direction d)
 		case Up:
 			if (cy > 0)
 				--cy;
+			// First frame of up animation
+			_anim_state = 6;
 			break;
 		case Down:
 			if (cy < __LEVEL_HEIGHT)
 				++cy;
+			// First frame of down animation
+			_anim_state = 12;
 			break;
 		case Left:
 			if (cx > 0)
 				--cx;
+			// First frame of left animation
+			_anim_state = 18;
 			break;
 		case Right:
 			if (cx < __LEVEL_WIDTH)
 				++cx;
+			// First frame of right animation
+			_anim_state = 24;
 	}
 	// Are we away from the edges?
 	if (cx != _x || cy != _y)
@@ -305,11 +366,17 @@ void Player::move(Direction d)
 			GameObject *o = _objects[(cy * __LEVEL_WIDTH) + cx];
 			if (o)
 			{
+				// Use strain animations up against objects,
+				// movable or otherwise
+				_straining = true;
 				if (((PushableObject*)o)->canMove(d))
 				{
 					((PushableObject*)o)->push(d);
 					// We're straining - reduce movement speed
 					_speed = 1;
+					// But maybe only for half a square
+					if (((PushableObject*)o)->rolls())
+						_push_momentum = __TILE_WIDTH / 2;
 				}
 				else
 					return;
@@ -319,6 +386,12 @@ void Player::move(Direction d)
 			_objects[(cy * __LEVEL_WIDTH) + cx] = this;
 			_x = cx;
 			_y = cy;
+			_busy = true;
+		}
+		else
+		{
+			// Use strain animations up against walls
+			_straining = true;
 		}
 	}
 }

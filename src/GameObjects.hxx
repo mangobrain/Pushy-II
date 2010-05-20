@@ -82,6 +82,10 @@ class Ball: public PushableObject
 		bool rolls() const;
 		void push(Direction d);
 		void render(SDL_Surface *screen);
+	private:
+		bool _rolling;
+		uint32_t _speed;
+		uint32_t _roll_momentum;
 };
 
 class Box: public PushableObject
@@ -105,6 +109,11 @@ class Player: public GameObject, AnimableObject
 		void move(Direction d);
 	private:
 		uint32_t _speed;
+		bool _busy;
+		uint32_t _push_momentum;
+		uint8_t _anim_loop;
+		uint8_t _anim_state;
+		bool _straining;
 };
 
 #endif
