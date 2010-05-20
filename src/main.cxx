@@ -34,6 +34,7 @@
 
 // Library
 #include <SDL.h>
+#include <SDL_framerate.h>
 #include <getopt.h>
 
 // Local
@@ -181,6 +182,9 @@ int main(int argc, char *argv[])
 	}
 
 	bool quit = false;
+	FPSmanager fpsm;
+	SDL_initFramerate(&fpsm);
+	SDL_setFramerate(&fpsm, 30);
 	SDL_SetEventFilter(event_filter);
 	while (!quit)
 	{
@@ -238,7 +242,7 @@ int main(int argc, char *argv[])
 			(*i)->render(screen);
 		}
 		SDL_Flip(screen);
-		SDL_Delay(40);
+		SDL_framerateDelay(&fpsm);
 	}
 
 	return 0;
