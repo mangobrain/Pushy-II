@@ -148,7 +148,11 @@ int main(int argc, char *argv[])
 	);
 
 	// Create GameObjects array
+	// Keep track of them in a vector too, regardless of their
+	// position in the game world, so we can render them without
+	// iterating over the whole lot
 	GameObject *objects[__LEVEL_WIDTH * __LEVEL_HEIGHT];
+	std::vector<GameObject*> v_objects;
 	Player *p = NULL;
 	memset(objects, NULL, sizeof(objects));
 	for (uint8_t i = 0; i < l[__TEST_LEVEL].num_sprites; ++i)
@@ -173,6 +177,7 @@ int main(int argc, char *argv[])
 					l[__TEST_LEVEL].tilemap, s->x, s->y, objects,
 					l.firstFloorTile(), l.firstCrossTile());
 		}
+		v_objects.push_back(*o);
 	}
 
 	bool quit = false;
@@ -225,13 +230,15 @@ int main(int argc, char *argv[])
 				};
 				SDL_BlitSurface(t[tilemap[(y * __LEVEL_WIDTH) + x]],
 					NULL, screen, &rect);
-				GameObject *o;
-				if ((o = objects[(y * __LEVEL_WIDTH) + x]))
-					o->render(screen);
 			}
 		}
+		for (std::vector<GameObject*>::const_iterator i = v_objects.begin();
+			i != v_objects.end(); ++i)
+		{
+			(*i)->render(screen);
+		}
 		SDL_Flip(screen);
-		SDL_Delay(60);
+		SDL_Delay(40);
 	}
 
 	return 0;
