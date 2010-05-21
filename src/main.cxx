@@ -49,7 +49,7 @@
 
 int event_filter(const SDL_Event *event)
 {
-	if (event->type == SDL_KEYDOWN || event->type == SDL_QUIT)
+	if (event->type == SDL_QUIT)
 		return 1;
 	return 0;
 }
@@ -192,34 +192,24 @@ int main(int argc, char *argv[])
 		SDL_Event e;
 		while (SDL_PollEvent(&e))
 		{
-			switch (e.type)
-			{
-				case SDL_KEYDOWN:
-					switch (e.key.keysym.sym)
-					{
-						case SDLK_ESCAPE:
-							quit = true;
-							break;
-						case SDLK_UP:
-							p->move(Up);
-							break;
-						case SDLK_DOWN:
-							p->move(Down);
-							break;
-						case SDLK_LEFT:
-							p->move(Left);
-							break;
-						case SDLK_RIGHT:
-							p->move(Right);
-							break;
-						default:
-							break;
-					}
-					break;
-				case SDL_QUIT:
-					quit = true;
-			}
+			// Only quit events are allowed on the queue
+			quit = true;
 		}
+
+		// Handle keypresses separately
+		// (we don't care about explicit presses/releases,
+		// just which keys are being held down)
+		Uint8 *keys = SDL_GetKeyState(NULL);
+		if (keys[SDLK_UP])
+			p->move(Up);
+		else if (keys[SDLK_DOWN])
+			p->move(Down);
+		else if (keys[SDLK_LEFT])
+			p->move(Left);
+		else if (keys[SDLK_RIGHT])
+			p->move(Right);
+		if (keys[SDLK_ESCAPE])
+			quit = true;
 
 		// Render background & game objects
 		const uint8_t *tilemap = l[__TEST_LEVEL].tilemap;
