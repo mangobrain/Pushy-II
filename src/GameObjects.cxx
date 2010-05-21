@@ -121,6 +121,23 @@ Player::Player(const TileSet *sprites, const uint8_t *tilemap,
 	AnimableObject(x, y), _speed(2), _busy(false), _push_momentum(0), _straining(false)
 {}
 
+bool AnimableObject::arrived(uint8_t x, uint8_t y) const
+{
+	return ((_anim_x == (uint32_t)x * __TILE_WIDTH) && (_anim_y == (uint32_t)y * __TILE_HEIGHT));
+}
+
+void AnimableObject::slideTo(uint8_t x, uint8_t y, uint32_t speed)
+{
+	if (_anim_x > (uint32_t)x * __TILE_WIDTH)
+		_anim_x -= speed;
+	else if (_anim_x < (uint32_t)x * __TILE_WIDTH)
+		_anim_x += speed;
+	else if (_anim_y > (uint32_t)y * __TILE_HEIGHT)
+		_anim_y -= speed;
+	else if (_anim_y < (uint32_t)y * __TILE_HEIGHT)
+		_anim_y += speed;
+}
+
 bool Ball::rolls() const
 {
 	return true;
@@ -218,16 +235,8 @@ void Ball::render(SDL_Surface *screen)
 {
 	if (_rolling)
 	{
-		// Slide to destination
-		if (_anim_x > (uint32_t)(_x) * __TILE_WIDTH)
-			_anim_x -= _speed;
-		else if (_anim_x < (uint32_t)(_x) * __TILE_WIDTH)
-			_anim_x += _speed;
-		else if (_anim_y > (uint32_t)(_y) * __TILE_HEIGHT)
-			_anim_y -= _speed;
-		else if (_anim_y < (uint32_t)(_y) * __TILE_HEIGHT)
-			_anim_y += _speed;
-		else
+		slideTo(_x, _y, _speed);
+		if (arrived(_x, _y))
 			_rolling = false;
 		// First half of first square is slid to at
 		// half normal speed, the momentum picks up
@@ -313,16 +322,8 @@ void Ball::render(SDL_Surface *screen)
 
 void Box::render(SDL_Surface *screen)
 {
-	// Slide to destination
-	if (_anim_x > (uint32_t)(_x) * __TILE_WIDTH)
-		--_anim_x;
-	else if (_anim_x < (uint32_t)(_x) * __TILE_WIDTH)
-		++_anim_x;
-	else if (_anim_y > (uint32_t)(_y) * __TILE_HEIGHT)
-		--_anim_y;
-	else if (_anim_y < (uint32_t)(_y) * __TILE_HEIGHT)
-		++_anim_y;
-	else if (!_defused && tileIsCross(_x, _y))
+	slideTo(_x, _y, 1);
+	if (!_defused && tileIsCross(_x, _y) && arrived(_x, _y))
 	{
 		// We've arived on a cross
 		// TODO Advance towards level completion
@@ -389,23 +390,15 @@ void Player::render(SDL_Surface *screen)
 {
 	if (_busy)
 	{
-		// Slide to destination
-		if (_anim_x > (uint32_t)(_x) * __TILE_WIDTH)
-			_anim_x -= _speed;
-		else if (_anim_x < (uint32_t)(_x) * __TILE_WIDTH)
-			_anim_x += _speed;
-		else if (_anim_y > (uint32_t)(_y) * __TILE_HEIGHT)
-			_anim_y -= _speed;
-		else if (_anim_y < (uint32_t)(_y) * __TILE_HEIGHT)
-			_anim_y += _speed;
-		else
+		slideTo(_x, _y, _speed);
+
+		if (arrived(_x, _y))
 		{
 			// We've arrived - we have finished pushing for now
 			_speed = 2;
 			_busy = false;
-			_anim_state = 0;
-			_straining = false;
 		}
+
 		// If we're pushing a rolling object, eventually
 		// it picks up speed and we can move more freely
 		if (_push_momentum > 0)

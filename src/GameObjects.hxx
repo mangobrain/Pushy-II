@@ -59,6 +59,8 @@ class AnimableObject
 		uint32_t _anim_y;
 		uint8_t _anim_index;
 		uint8_t _anim_state;
+		bool arrived(uint8_t x, uint8_t y) const;
+		void slideTo(uint8_t x, uint8_t y, uint32_t speed);
 };
 
 class PushableObject: public GameObject, public AnimableObject
