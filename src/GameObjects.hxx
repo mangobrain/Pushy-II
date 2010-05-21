@@ -71,6 +71,8 @@ class PushableObject: public GameObject, public AnimableObject
 		virtual bool rolls() const = 0;
 		virtual void push(Direction d) = 0;
 		virtual ~PushableObject() {};
+	protected:
+		bool _defused;
 };
 
 class Ball: public PushableObject
@@ -111,10 +113,6 @@ class Player: public GameObject, AnimableObject
 		uint32_t _speed;
 		bool _busy;
 		uint32_t _push_momentum;
-		// TODO Get rid of these two - this is what
-		// _anim_index and _anim_state in AnimableObject are for
-		uint8_t _anim_loop;
-		uint8_t _anim_state;
 		bool _straining;
 };
 

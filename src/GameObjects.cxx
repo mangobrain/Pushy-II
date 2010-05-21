@@ -57,7 +57,7 @@ bool GameObject::tileIsEmpty(uint8_t x, uint8_t y) const
 
 bool GameObject::tileIsCross(uint8_t x, uint8_t y) const
 {
-	return (_tilemap[(y * __LEVEL_WIDTH) + x] >= _first_cross_tile);
+	return (_tilemap[(y * __LEVEL_WIDTH) + x] < _first_cross_tile);
 }
 
 bool PushableObject::canMove(Direction d) const
@@ -93,7 +93,7 @@ PushableObject::PushableObject(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
 	uint8_t first_floor_tile, uint8_t first_cross_tile)
 	:GameObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
-	AnimableObject(x, y)
+	AnimableObject(x, y), _defused(false)
 {}
 
 AnimableObject::AnimableObject(uint8_t ax, uint8_t ay)
@@ -118,8 +118,7 @@ Player::Player(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
 	uint8_t first_floor_tile, uint8_t first_cross_tile)
 	:GameObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
-	AnimableObject(x, y), _speed(2), _busy(false), _push_momentum(0), _anim_loop(0),
-	_anim_state(0), _straining(false)
+	AnimableObject(x, y), _speed(2), _busy(false), _push_momentum(0), _straining(false)
 {}
 
 bool Ball::rolls() const
@@ -235,15 +234,80 @@ void Ball::render(SDL_Surface *screen)
 		if (++_roll_momentum >= __TILE_WIDTH / 2)
 			_speed = 2;
 	}
-	// TODO Check (when arrived) whether destination is a cross, and defuse
-	// TODO Update defusion counter
-	// TODO Animate fused/defused
+	// Check (when arrived) whether destination is a cross, and defuse
+	if (!_rolling && !_defused && tileIsCross(_x, _y))
+	{
+		// TODO Advance towards level completion
+		_defused = true;
+	}
+	if (_defused && !tileIsCross(_x, _y))
+	{
+		// We've been pushed off a cross, arrived or otherwise
+		// TODO Back away from level completion
+		_defused = false;
+	}
+	// 8-14 = on fire, 15-19 = defused
+	// minus 8, that makes 0-6 = on fire, 7-11 defused
+	// double up frame indexes to slow down animation rate
+	switch (_anim_state)
+	{
+		case 0:
+			// on fire - animation looping upwards
+			if (++_anim_index == 13)
+			{
+				if (_defused)
+					_anim_state = 2;
+				else
+				{
+					_anim_state = 1;
+					// Don't stay at loop end frame
+					// for three frames in a row
+					--_anim_index;
+				}
+			}
+			break;
+		case 1:
+			// on fire - animation looping downwards
+			if (--_anim_index == 0)
+			{
+				_anim_state = 0;
+				// Don't stay at loop end frame
+				// for three frames in a row
+				++_anim_index;
+			}
+			break;
+		case 2:
+			// defused - looping upwards
+			if (++_anim_index == 23)
+			{
+				_anim_state = 3;
+				// Don't stay at loop end frame
+				// for three frames in a row
+				--_anim_index;
+			}
+			break;
+		case 3:
+			// defused - looping downwards
+			if (--_anim_index == 14)
+			{
+				if (_defused)
+				{
+					_anim_state = 2;
+					// Don't stay at loop end frame
+					// for three frames in a row
+					++_anim_index;
+				}
+				else
+					_anim_state = 1;
+			}
+	}
 	SDL_Rect rect = {
 		_anim_x, _anim_y,
 		0, 0
 	};
-	// 8-14 = on fire, 15-19 = defused
-	SDL_Surface *sprite = (*_sprites)[_anim_index + 8];
+	// frame indexes are doubled to slow down animation rates
+	// halve them before accessing the sprite array
+	SDL_Surface *sprite = (*_sprites)[(_anim_index / 2) + 8];
 	SDL_BlitSurface(sprite, NULL, screen, &rect);
 }
 
@@ -258,15 +322,66 @@ void Box::render(SDL_Surface *screen)
 		--_anim_y;
 	else if (_anim_y < (uint32_t)(_y) * __TILE_HEIGHT)
 		++_anim_y;
-	// TODO Check (when arrived) whether destination is a cross, and defuse
-	// TODO Update defusion counter
-	// TODO Animate fused/defused
+	else if (!_defused && tileIsCross(_x, _y))
+	{
+		// We've arived on a cross
+		// TODO Advance towards level completion
+		_defused = true;
+	}
+
+	if (_defused && !tileIsCross(_x, _y))
+	{
+		// We've been pushed off a cross, arrived or otherwise
+		// TODO Back away from level completion
+		_defused = false;
+	}
+
 	SDL_Rect rect = {
 		_anim_x, _anim_y,
 		0, 0
 	};
+	// animation frame indexes:
 	// 0-6 = on fire, 7 = defused
-	SDL_Surface *sprite = (*_sprites)[_anim_index];
+	switch (_anim_state)
+	{
+		case 0:
+			// on fire - animation looping forwards
+			// double up frame indexes to slow down animation rate
+			if (++_anim_index == 13)
+			{
+				if (_defused)
+					_anim_state = 2;
+				else
+				{
+					_anim_state = 1;
+					// Don't stay at loop end frame
+					// for three frames in a row
+					--_anim_index;
+				}
+			}
+			break;
+		case 1:
+			// on fire - animation looping backwards
+			if (--_anim_index == 0)
+			{
+				_anim_state = 0;
+				// Don't stay at loop end frame
+				// for three frames in a row
+				++_anim_index;
+			}
+			break;
+		case 2:
+			// defused
+			_anim_index = 14;
+			if (!_defused)
+			{
+				--_anim_index;
+				_anim_state = 1;
+			}
+	}
+	// frame indexes are doubled to slow down animation rates
+	// halve them before accessing the sprite array
+	SDL_Surface *sprite = (*_sprites)[_anim_index / 2];
 	SDL_BlitSurface(sprite, NULL, screen, &rect);
 }
 
@@ -305,13 +420,13 @@ void Player::render(SDL_Surface *screen)
 	// Animate up/down/left/right loops
 	// All are 6 frames long, but go too quickly at 30fps,
 	// so count to 12 and only step every other frame
-	if (++_anim_loop == 12)
-		_anim_loop = 0;
+	if (++_anim_index == 12)
+		_anim_index = 0;
 	SDL_Rect rect = {
 		_anim_x, _anim_y,
 		0, 0
 	};
-	SDL_Surface *sprite = (*_sprites)[_anim_index + (_anim_loop / 2) + _anim_state + (_straining ? 24 : 0)];
+	SDL_Surface *sprite = (*_sprites)[(_anim_index / 2) + _anim_state + (_straining ? 24 : 0)];
 	SDL_BlitSurface(sprite, NULL, screen, &rect);
 	// If player pushed against a wall, only stay in the left/right/up/down
 	// animation for one frame, unless they keep the key held down
