@@ -40,6 +40,8 @@
 // Implementation
 //
 
+extern int objects_left;
+
 GameObject::GameObject(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
 	uint8_t first_floor_tile, uint8_t first_cross_tile)
@@ -246,13 +248,13 @@ void Ball::render(SDL_Surface *screen)
 	// Check (when arrived) whether destination is a cross, and defuse
 	if (!_rolling && !_defused && tileIsCross(_x, _y))
 	{
-		// TODO Advance towards level completion
+		--objects_left;
 		_defused = true;
 	}
 	if (_defused && !tileIsCross(_x, _y))
 	{
 		// We've been pushed off a cross, arrived or otherwise
-		// TODO Back away from level completion
+		++objects_left;
 		_defused = false;
 	}
 	// 8-14 = on fire, 15-19 = defused
@@ -326,14 +328,14 @@ void Box::render(SDL_Surface *screen)
 	if (!_defused && tileIsCross(_x, _y) && arrived(_x, _y))
 	{
 		// We've arived on a cross
-		// TODO Advance towards level completion
+		--objects_left;
 		_defused = true;
 	}
 
 	if (_defused && !tileIsCross(_x, _y))
 	{
 		// We've been pushed off a cross, arrived or otherwise
-		// TODO Back away from level completion
+		++objects_left;
 		_defused = false;
 	}
 

@@ -47,6 +47,8 @@
 // Implementation
 //
 
+int objects_left = 0;
+
 int event_filter(const SDL_Event *event)
 {
 	if (event->type == SDL_QUIT)
@@ -141,98 +143,106 @@ int main(int argc, char *argv[])
 	//
 	// XXX Prototype code XXX
 	//
-	#define __TEST_LEVEL 2
 	SDL_Surface *screen = SDL_SetVideoMode(
 		__TILE_WIDTH * __LEVEL_WIDTH,
 		__TILE_HEIGHT * __LEVEL_HEIGHT,
 		24, SDL_HWSURFACE | SDL_DOUBLEBUF
 	);
-
-	// Create GameObjects array
-	// Keep track of them in a vector too, regardless of their
-	// position in the game world, so we can render them without
-	// iterating over the whole lot
-	GameObject *objects[__LEVEL_WIDTH * __LEVEL_HEIGHT];
-	std::vector<GameObject*> v_objects;
-	Player *p = NULL;
-	memset(objects, NULL, sizeof(objects));
-	for (uint8_t i = 0; i < l[__TEST_LEVEL].num_sprites; ++i)
-	{
-		const SpriteInfo *s = &(l[__TEST_LEVEL].spriteinfo[i]);
-		GameObject **o = &(objects[(s->y * __LEVEL_WIDTH) + s->x]);
-		switch (s->index)
-		{
-			case 0:
-				*o = new Player(&(l.getPlayerSprites()),
-					l[__TEST_LEVEL].tilemap, s->x, s->y, objects,
-					l.firstFloorTile(), l.firstCrossTile());
-				p = (Player*) *o;
-				break;
-			case 1:
-				*o = new Box(&(l.getSprites()),
-					l[__TEST_LEVEL].tilemap, s->x, s->y, objects,
-					l.firstFloorTile(), l.firstCrossTile());
-				break;
-			case 2:
-				*o = new Ball(&(l.getSprites()),
-					l[__TEST_LEVEL].tilemap, s->x, s->y, objects,
-					l.firstFloorTile(), l.firstCrossTile());
-		}
-		v_objects.push_back(*o);
-	}
-
 	bool quit = false;
 	FPSmanager fpsm;
 	SDL_initFramerate(&fpsm);
 	SDL_setFramerate(&fpsm, 30);
 	SDL_SetEventFilter(event_filter);
+
+	int level = 0;
 	while (!quit)
 	{
-		// Process events
-		SDL_Event e;
-		while (SDL_PollEvent(&e))
+		// Create GameObjects array
+		// Keep track of them in a vector too, regardless of their
+		// position in the game world, so we can render them without
+		// iterating over the whole lot
+		GameObject *objects[__LEVEL_WIDTH * __LEVEL_HEIGHT];
+		std::vector<GameObject*> v_objects;
+		Player *p = NULL;
+		memset(objects, NULL, sizeof(objects));
+		objects_left = 0;
+		for (uint8_t i = 0; i < l[level].num_sprites; ++i)
 		{
-			// Only quit events are allowed on the queue
-			quit = true;
-		}
-
-		// Handle keypresses separately
-		// (we don't care about explicit presses/releases,
-		// just which keys are being held down)
-		Uint8 *keys = SDL_GetKeyState(NULL);
-		if (keys[SDLK_UP])
-			p->move(Up);
-		else if (keys[SDLK_DOWN])
-			p->move(Down);
-		else if (keys[SDLK_LEFT])
-			p->move(Left);
-		else if (keys[SDLK_RIGHT])
-			p->move(Right);
-		if (keys[SDLK_ESCAPE])
-			quit = true;
-
-		// Render background & game objects
-		const uint8_t *tilemap = l[__TEST_LEVEL].tilemap;
-		for (int y = 0; y < __LEVEL_HEIGHT; ++y)
-		{
-			for (int x = 0; x < __LEVEL_WIDTH; ++x)
+			const SpriteInfo *s = &(l[level].spriteinfo[i]);
+			GameObject **o = &(objects[(s->y * __LEVEL_WIDTH) + s->x]);
+			switch (s->index)
 			{
-				SDL_Rect rect = {
-					x * __TILE_WIDTH,
-					y * __TILE_HEIGHT,
-					0, 0
-				};
-				SDL_BlitSurface(t[tilemap[(y * __LEVEL_WIDTH) + x]],
-					NULL, screen, &rect);
+				case 0:
+					*o = new Player(&(l.getPlayerSprites()),
+						l[level].tilemap, s->x, s->y, objects,
+						l.firstFloorTile(), l.firstCrossTile());
+					p = (Player*) *o;
+					break;
+				case 1:
+					*o = new Box(&(l.getSprites()),
+						l[level].tilemap, s->x, s->y, objects,
+						l.firstFloorTile(), l.firstCrossTile());
+					break;
+				case 2:
+					*o = new Ball(&(l.getSprites()),
+						l[level].tilemap, s->x, s->y, objects,
+						l.firstFloorTile(), l.firstCrossTile());
 			}
+			v_objects.push_back(*o);
+			++objects_left;
 		}
-		for (std::vector<GameObject*>::const_iterator i = v_objects.begin();
-			i != v_objects.end(); ++i)
+		// One object is the player
+		--objects_left;
+
+		while (!quit && objects_left > 0)
 		{
-			(*i)->render(screen);
+			// Process events
+			SDL_Event e;
+			while (SDL_PollEvent(&e))
+			{
+				// Only quit events are allowed on the queue
+				quit = true;
+			}
+
+			// Handle keypresses separately
+			// (we don't care about explicit presses/releases,
+			// just which keys are being held down)
+			Uint8 *keys = SDL_GetKeyState(NULL);
+			if (keys[SDLK_UP])
+				p->move(Up);
+			else if (keys[SDLK_DOWN])
+				p->move(Down);
+			else if (keys[SDLK_LEFT])
+				p->move(Left);
+			else if (keys[SDLK_RIGHT])
+				p->move(Right);
+			if (keys[SDLK_ESCAPE])
+				quit = true;
+
+			// Render background & game objects
+			const uint8_t *tilemap = l[level].tilemap;
+			for (int y = 0; y < __LEVEL_HEIGHT; ++y)
+			{
+				for (int x = 0; x < __LEVEL_WIDTH; ++x)
+				{
+					SDL_Rect rect = {
+						x * __TILE_WIDTH,
+						y * __TILE_HEIGHT,
+						0, 0
+					};
+					SDL_BlitSurface(t[tilemap[(y * __LEVEL_WIDTH) + x]],
+						NULL, screen, &rect);
+				}
+			}
+			for (std::vector<GameObject*>::const_iterator i = v_objects.begin();
+				i != v_objects.end(); ++i)
+			{
+				(*i)->render(screen);
+			}
+			SDL_Flip(screen);
+			SDL_framerateDelay(&fpsm);
 		}
-		SDL_Flip(screen);
-		SDL_framerateDelay(&fpsm);
+		++level;
 	}
 
 	return 0;
