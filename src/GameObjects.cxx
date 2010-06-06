@@ -40,6 +40,10 @@
 // Implementation
 //
 
+#define PLAYER_SPEED 4
+#define PUSH_SPEED 2
+#define ROLL_SPEED 4
+
 extern int objects_left;
 
 GameObject::GameObject(const TileSet *sprites, const uint8_t *tilemap,
@@ -107,7 +111,7 @@ Ball::Ball(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
 	uint8_t first_floor_tile, uint8_t first_cross_tile)
 	:PushableObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
-	_rolling(false), _speed(1), _roll_momentum(0)
+	_rolling(false), _speed(PUSH_SPEED), _roll_momentum(0)
 {}
 
 Box::Box(const TileSet *sprites, const uint8_t *tilemap,
@@ -120,7 +124,7 @@ Player::Player(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
 	uint8_t first_floor_tile, uint8_t first_cross_tile)
 	:GameObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
-	AnimableObject(x, y), _speed(2), _busy(false), _push_momentum(0), _straining(false)
+	AnimableObject(x, y), _speed(PLAYER_SPEED), _busy(false), _push_momentum(0), _straining(false)
 {}
 
 bool AnimableObject::arrived(uint8_t x, uint8_t y) const
@@ -199,7 +203,7 @@ void Ball::push(Direction d)
 	_x = cx;
 	_y = cy;
 	_rolling = true;
-	_speed = 1;
+	_speed = PUSH_SPEED;
 	_roll_momentum = 0;
 }
 
@@ -242,8 +246,8 @@ void Ball::render(SDL_Surface *screen)
 			_rolling = false;
 		// First half of first square is slid to at
 		// half normal speed, the momentum picks up
-		if (++_roll_momentum >= __TILE_WIDTH / 2)
-			_speed = 2;
+		if ((_roll_momentum += _speed) >= __TILE_WIDTH / 2)
+			_speed = ROLL_SPEED;
 	}
 	// Check (when arrived) whether destination is a cross, and defuse
 	if (!_rolling && !_defused && tileIsCross(_x, _y))
@@ -324,7 +328,7 @@ void Ball::render(SDL_Surface *screen)
 
 void Box::render(SDL_Surface *screen)
 {
-	slideTo(_x, _y, 1);
+	slideTo(_x, _y, PUSH_SPEED);
 	if (!_defused && tileIsCross(_x, _y) && arrived(_x, _y))
 	{
 		// We've arived on a cross
@@ -397,7 +401,7 @@ void Player::render(SDL_Surface *screen)
 		if (arrived(_x, _y))
 		{
 			// We've arrived - we have finished pushing for now
-			_speed = 2;
+			_speed = PLAYER_SPEED;
 			_busy = false;
 		}
 
@@ -405,9 +409,9 @@ void Player::render(SDL_Surface *screen)
 		// it picks up speed and we can move more freely
 		if (_push_momentum > 0)
 		{
-			if (--_push_momentum == 0)
+			if ((_push_momentum -= PUSH_SPEED) == 0)
 			{
-				_speed = 2;
+				_speed = PLAYER_SPEED;
 				_straining = false;
 			}
 		}
@@ -483,7 +487,7 @@ void Player::move(Direction d)
 				{
 					((PushableObject*)o)->push(d);
 					// We're straining - reduce movement speed
-					_speed = 1;
+					_speed = PUSH_SPEED;
 					// But maybe only for half a square
 					if (((PushableObject*)o)->rolls())
 						_push_momentum = __TILE_WIDTH / 2;
