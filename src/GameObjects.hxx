@@ -15,7 +15,7 @@
 //    You should have received a copy of the GNU General Public License
 //    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef __HXX_GAMEOBJECTS
+#ifndef HXX_GAMEOBJECTS
 
 class GameObject
 {
@@ -30,15 +30,15 @@ class GameObject
 		bool tileIsEmpty(uint8_t x, uint8_t y) const;
 		bool tileIsCross(uint8_t x, uint8_t y) const;
 
-		const TileSet *_sprites;
-		uint8_t _x;
-		uint8_t _y;
-		GameObject **_objects;
+		const TileSet *m_sprites;
+		uint8_t m_x;
+		uint8_t m_y;
+		GameObject **m_objects;
 
 	private:
-		const uint8_t *_tilemap;
-		const uint8_t _first_floor_tile;
-		const uint8_t _first_cross_tile;
+		const uint8_t *m_tilemap;
+		const uint8_t m_first_floor_tile;
+		const uint8_t m_first_cross_tile;
 };
 
 enum Direction
@@ -55,10 +55,10 @@ class AnimableObject
 		AnimableObject(uint8_t ax, uint8_t ay);
 		virtual ~AnimableObject() {};
 	protected:
-		uint32_t _anim_x;
-		uint32_t _anim_y;
-		uint8_t _anim_index;
-		uint8_t _anim_state;
+		uint32_t m_anim_x;
+		uint32_t m_anim_y;
+		uint8_t m_anim_index;
+		uint8_t m_anim_state;
 		bool arrived(uint8_t x, uint8_t y) const;
 		void slideTo(uint8_t x, uint8_t y, uint32_t speed);
 };
@@ -74,7 +74,7 @@ class PushableObject: public GameObject, public AnimableObject
 		virtual void push(Direction d) = 0;
 		virtual ~PushableObject() {};
 	protected:
-		bool _defused;
+		bool m_defused;
 };
 
 class Ball: public PushableObject
@@ -87,9 +87,9 @@ class Ball: public PushableObject
 		void push(Direction d);
 		void render(SDL_Surface *screen);
 	private:
-		bool _rolling;
-		uint32_t _speed;
-		uint32_t _roll_momentum;
+		bool m_rolling;
+		uint32_t m_speed;
+		uint32_t m_roll_momentum;
 };
 
 class Box: public PushableObject
@@ -112,10 +112,10 @@ class Player: public GameObject, AnimableObject
 		void render(SDL_Surface *screen);
 		void move(Direction d);
 	private:
-		uint32_t _speed;
-		bool _busy;
-		uint32_t _push_momentum;
-		bool _straining;
+		uint32_t m_speed;
+		bool m_busy;
+		uint32_t m_push_momentum;
+		bool m_straining;
 };
 
 #endif

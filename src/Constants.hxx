@@ -15,12 +15,12 @@
 //    You should have received a copy of the GNU General Public License
 //    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef __HXX_CONSTANTS
+#ifndef HXX_CONSTANTS
 
-#define __MAX_SPRITES_PER_LEVEL 20
-#define __LEVEL_WIDTH 20
-#define __LEVEL_HEIGHT 12
-#define __TILE_WIDTH 32
-#define __TILE_HEIGHT 32
+#define P2_MAX_SPRITES_PER_LEVEL 20
+#define P2_LEVEL_WIDTH 20
+#define P2_LEVEL_HEIGHT 12
+#define P2_TILE_WIDTH 32
+#define P2_TILE_HEIGHT 32
 
 #endif

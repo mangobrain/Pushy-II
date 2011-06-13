@@ -69,8 +69,8 @@ TileSet::TileSet(const char *filename, int width, int height, bool colorkey)
 			0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000);
 		if (!tile)
 		{
-			for (std::vector<SDL_Surface*>::iterator i = _tiles.begin();
-				i < _tiles.end(); ++i)
+			for (std::vector<SDL_Surface*>::iterator i = m_tiles.begin();
+				i < m_tiles.end(); ++i)
 			{
 				SDL_FreeSurface(*i);
 			}
@@ -106,13 +106,13 @@ TileSet::TileSet(const char *filename, int width, int height, bool colorkey)
 			}
 		}
 
-		_tiles.push_back(tile);
+		m_tiles.push_back(tile);
 	}
 }
 
 TileSet::~TileSet()
 {
-	for (std::vector<SDL_Surface*>::iterator i = _tiles.begin(); i < _tiles.end(); ++i)
+	for (std::vector<SDL_Surface*>::iterator i = m_tiles.begin(); i < m_tiles.end(); ++i)
 	{
 		SDL_FreeSurface(*i);
 	}

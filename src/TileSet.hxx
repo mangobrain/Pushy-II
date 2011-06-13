@@ -15,8 +15,8 @@
 //    You should have received a copy of the GNU General Public License
 //    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef __HXX_TILESET
-#define __HXX_TILESET
+#ifndef HXX_TILESET
+#define HXX_TILESET
 
 #include <vector>
 
@@ -30,15 +30,15 @@ class TileSet
 
 		SDL_Surface *operator[](std::vector<SDL_Surface*>::size_type index) const
 		{
-			return _tiles[index];
+			return m_tiles[index];
 		};
 
 		std::vector<SDL_Surface*>::size_type size() const
 		{
-			return _tiles.size();
+			return m_tiles.size();
 		};
 	private:
-		std::vector<SDL_Surface*> _tiles;
+		std::vector<SDL_Surface*> m_tiles;
 };
 
 #endif

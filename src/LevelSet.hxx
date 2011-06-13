@@ -15,8 +15,8 @@
 //    You should have received a copy of the GNU General Public License
 //    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef __HXX_LEVELSET
-#define __HXX_LEVELSET
+#ifndef HXX_LEVELSET
+#define HXX_LEVELSET
 
 #include <vector>
 #include <memory>
@@ -38,8 +38,8 @@ struct Level
 	uint8_t bonus[4];
 	unsigned char name_colour[3];
 	uint8_t num_sprites;
-	SpriteInfo spriteinfo[__MAX_SPRITES_PER_LEVEL];
-	uint8_t tilemap[__LEVEL_HEIGHT * __LEVEL_WIDTH];
+	SpriteInfo spriteinfo[P2_MAX_SPRITES_PER_LEVEL];
+	uint8_t tilemap[P2_LEVEL_HEIGHT * P2_LEVEL_WIDTH];
 };
 
 // Load in a level set, including the tiles and sprites it requires
@@ -51,52 +51,52 @@ class LevelSet
 
 		const Level &operator[](int index) const
 		{
-			return _levelset[index];
+			return m_levelset[index];
 		};
 
 		std::vector<Level>::size_type size() const
 		{
-			return _levelset.size();
+			return m_levelset.size();
 		};
 
 		const TileSet &getTiles() const
 		{
-			return *_tileset;
+			return *m_tileset;
 		};
 
 		const TileSet &getSprites() const
 		{
-			return *_spriteset;
+			return *m_spriteset;
 		};
 
 		const TileSet &getPlayerSprites() const
 		{
-			return *_playerspriteset;
+			return *m_playerspriteset;
 		};
 
 		const uint8_t *getTitleScreen() const
 		{
-			return _titlescreen;
+			return m_titlescreen;
 		};
 		
 		uint8_t firstFloorTile() const
 		{
-			return _first_floor_tile;
+			return m_first_floor_tile;
 		};
 		
 		uint8_t firstCrossTile() const
 		{
-			return _first_cross_tile;
+			return m_first_cross_tile;
 		};
 
 	private:
-		std::auto_ptr<TileSet> _tileset;
-		std::auto_ptr<TileSet> _spriteset;
-		std::auto_ptr<TileSet> _playerspriteset;
-		std::vector<Level> _levelset;
-		uint8_t _titlescreen[__LEVEL_HEIGHT * __LEVEL_WIDTH];
-		uint8_t _first_floor_tile;
-		uint8_t _first_cross_tile;
+		std::auto_ptr<TileSet> m_tileset;
+		std::auto_ptr<TileSet> m_spriteset;
+		std::auto_ptr<TileSet> m_playerspriteset;
+		std::vector<Level> m_levelset;
+		uint8_t m_titlescreen[P2_LEVEL_HEIGHT * P2_LEVEL_WIDTH];
+		uint8_t m_first_floor_tile;
+		uint8_t m_first_cross_tile;
 };
 
 #endif

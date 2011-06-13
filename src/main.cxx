@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 	else if (version)
 	{
 		std::cout << PACKAGE_STRING << std::endl << std::endl;
-		std::cout << "Built with: " << __P2_CONFIGURE_OPTS << std::endl;
+		std::cout << "Built with: " << P2_CONFIGURE_OPTS << std::endl;
 		return 0;
 	}
 
@@ -131,10 +131,10 @@ int main(int argc, char *argv[])
 	//
 	// Load in resources
 	//
-	if (chdir(__P2_PKGDATADIR) < 0)
+	if (chdir(P2_PKGDATADIR) < 0)
 	{
 		std::cerr << "Could not change working directory to \""
-			<< __P2_PKGDATADIR << "\": " << strerror(errno);
+			<< P2_PKGDATADIR << "\": " << strerror(errno);
 		return 1;
 	}
 	LevelSet l("LegoLev");
@@ -144,8 +144,8 @@ int main(int argc, char *argv[])
 	// XXX Prototype code XXX
 	//
 	SDL_Surface *screen = SDL_SetVideoMode(
-		__TILE_WIDTH * __LEVEL_WIDTH,
-		__TILE_HEIGHT * __LEVEL_HEIGHT,
+		P2_TILE_WIDTH * P2_LEVEL_WIDTH,
+		P2_TILE_HEIGHT * P2_LEVEL_HEIGHT,
 		24, SDL_HWSURFACE | SDL_DOUBLEBUF
 	);
 	bool quit = false;
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
 		// Keep track of them in a vector too, regardless of their
 		// position in the game world, so we can render them without
 		// iterating over the whole lot
-		GameObject *objects[__LEVEL_WIDTH * __LEVEL_HEIGHT];
+		GameObject *objects[P2_LEVEL_WIDTH * P2_LEVEL_HEIGHT];
 		std::vector<GameObject*> v_objects;
 		Player *p = NULL;
 		memset(objects, NULL, sizeof(objects));
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 		for (uint8_t i = 0; i < l[level].num_sprites; ++i)
 		{
 			const SpriteInfo *s = &(l[level].spriteinfo[i]);
-			GameObject **o = &(objects[(s->y * __LEVEL_WIDTH) + s->x]);
+			GameObject **o = &(objects[(s->y * P2_LEVEL_WIDTH) + s->x]);
 			switch (s->index)
 			{
 				case 0:
@@ -221,16 +221,16 @@ int main(int argc, char *argv[])
 
 			// Render background & game objects
 			const uint8_t *tilemap = l[level].tilemap;
-			for (int y = 0; y < __LEVEL_HEIGHT; ++y)
+			for (int y = 0; y < P2_LEVEL_HEIGHT; ++y)
 			{
-				for (int x = 0; x < __LEVEL_WIDTH; ++x)
+				for (int x = 0; x < P2_LEVEL_WIDTH; ++x)
 				{
 					SDL_Rect rect = {
-						x * __TILE_WIDTH,
-						y * __TILE_HEIGHT,
+						x * P2_TILE_WIDTH,
+						y * P2_TILE_HEIGHT,
 						0, 0
 					};
-					SDL_BlitSurface(t[tilemap[(y * __LEVEL_WIDTH) + x]],
+					SDL_BlitSurface(t[tilemap[(y * P2_LEVEL_WIDTH) + x]],
 						NULL, screen, &rect);
 				}
 			}

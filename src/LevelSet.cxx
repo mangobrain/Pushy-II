@@ -80,34 +80,34 @@ LevelSet::LevelSet(const char *filename)
 
 	// Read in number of levels in the set
 	uint32_t num_levels = readInt(setfile);
-	_levelset.reserve(num_levels);
+	m_levelset.reserve(num_levels);
 
 	// Read numbers of first cross tile and first floor tile
 	// Stored as two 32-bit little endian ints, but tile indexes
 	// are only one byte, so ignore the bytes we don't need
-	setfile.read((char*)(&_first_floor_tile), 1);
+	setfile.read((char*)(&m_first_floor_tile), 1);
 	setfile.seekg(3, std::ios::cur);
-	setfile.read((char*)(&_first_cross_tile), 1);
+	setfile.read((char*)(&m_first_cross_tile), 1);
 	setfile.seekg(3, std::ios::cur);
 
 	// Read in the tile, sprite & player sprite files
 	char strbuff[13];
 	readString(setfile, strbuff);
-	_tileset.reset(new TileSet(strbuff, __TILE_WIDTH, __TILE_HEIGHT));
+	m_tileset.reset(new TileSet(strbuff, P2_TILE_WIDTH, P2_TILE_HEIGHT));
 	readString(setfile, strbuff);
-	_spriteset.reset(new TileSet(strbuff, __TILE_WIDTH, __TILE_HEIGHT, true));
+	m_spriteset.reset(new TileSet(strbuff, P2_TILE_WIDTH, P2_TILE_HEIGHT, true));
 	readString(setfile, strbuff);
-	_playerspriteset.reset(new TileSet(strbuff, __TILE_WIDTH, __TILE_HEIGHT, true));
+	m_playerspriteset.reset(new TileSet(strbuff, P2_TILE_WIDTH, P2_TILE_HEIGHT, true));
 
 	// Read in the title screen tilemap
-	setfile.read((char*)_titlescreen, __LEVEL_HEIGHT * __LEVEL_WIDTH);
+	setfile.read((char*)m_titlescreen, P2_LEVEL_HEIGHT * P2_LEVEL_WIDTH);
 
 	// Read in each level
 	for (uint32_t i = 0; i < num_levels; ++i)
 	{
 		// 12 bytes "encrypted" level name
-		_levelset.push_back(Level());
-		Level &l(_levelset.back());
+		m_levelset.push_back(Level());
+		Level &l(m_levelset.back());
 		readString(setfile, strbuff, true);
 		l.name.assign(strbuff);
 
@@ -119,11 +119,11 @@ LevelSet::LevelSet(const char *filename)
 		setfile.seekg(1, std::ios::cur);
 
 		// tile map
-		setfile.read((char*)(l.tilemap), __LEVEL_HEIGHT * __LEVEL_WIDTH);
+		setfile.read((char*)(l.tilemap), P2_LEVEL_HEIGHT * P2_LEVEL_WIDTH);
 
 		// number of sprites
 		l.num_sprites = readInt(setfile);
-		if (l.num_sprites > __MAX_SPRITES_PER_LEVEL)
+		if (l.num_sprites > P2_MAX_SPRITES_PER_LEVEL)
 			throw std::runtime_error("Too many sprites in level");
 		
 		// Read in sprite info
@@ -136,7 +136,7 @@ LevelSet::LevelSet(const char *filename)
 
 		// Skip junk data if we don't have a full sprite info section
 		setfile.seekg(
-			(__MAX_SPRITES_PER_LEVEL - l.num_sprites) * 3,
+			(P2_MAX_SPRITES_PER_LEVEL - l.num_sprites) * 3,
 			std::ios::cur
 		);
 	}

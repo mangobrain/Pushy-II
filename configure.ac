@@ -39,7 +39,7 @@ AC_CONFIG_HEADERS([config.h])
 
 dnl # Output the command-line options given to this script
 AC_DEFINE_UNQUOTED(
-	[__P2_CONFIGURE_OPTS],
+	[P2_CONFIGURE_OPTS],
 	["$ac_configure_args"],
 	[Options given to ./configure]
 )
