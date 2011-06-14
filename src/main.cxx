@@ -28,6 +28,7 @@
 #include <iostream>
 #include <cerrno>
 #include <cstring>
+#include <cstdlib>
 
 // System
 #include <unistd.h>
@@ -127,6 +128,7 @@ int main(int argc, char *argv[])
 		std::cerr << "Could not initialise SDL: " << SDL_GetError() << std::endl;
 		return 1;
 	}
+	atexit(SDL_Quit);
 
 	//
 	// Load in resources

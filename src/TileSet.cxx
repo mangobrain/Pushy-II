@@ -60,12 +60,12 @@ TileSet::TileSet(const char *filename, int width, int height, bool colorkey)
 	while (filesize - setfile.tellg() >= tilesize)
 	{
 		// Allocate buffer and read in raw data
-		std::auto_ptr<char> buff(new char[tilesize]);
-		setfile.read(buff.get(), tilesize);
-		unsigned char *ubuff = (unsigned char*)(buff.get());
+		char *buff = new char[tilesize];
+		setfile.read(buff, tilesize);
+		unsigned char *ubuff = (unsigned char*)(buff);
 
 		// Allocate a new SDL_Surface to hold the data
-		SDL_Surface *tile = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 24,
+		SDL_Surface *tile = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 32,
 			0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000);
 		if (!tile)
 		{
@@ -107,6 +107,7 @@ TileSet::TileSet(const char *filename, int width, int height, bool colorkey)
 		}
 
 		m_tiles.push_back(tile);
+		delete[] buff;
 	}
 }
 
