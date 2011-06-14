@@ -94,11 +94,11 @@ TileSet::TileSet(const char *filename, int width, int height, bool colorkey)
 				size_t boff = (y * width * 4) + (x * 4);
 				if (colorkey && ubuff[boff + 3])
 				{
-					*pixel |= tile->format->colorkey;
+					*pixel = tile->format->colorkey;
 				}
 				else
 				{
-					*pixel |= ((ubuff[boff] >> tile->format->Rloss) << tile->format->Rshift)
+					*pixel = ((ubuff[boff] >> tile->format->Rloss) << tile->format->Rshift)
 						| ((ubuff[boff + 1] >> tile->format->Gloss) << tile->format->Gshift)
 						| ((ubuff[boff + 2] >> tile->format->Bloss) << tile->format->Bshift);
 				}
