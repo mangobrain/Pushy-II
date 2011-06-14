@@ -15,4 +15,4 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
-dist_pkgdata_DATA = LegoLev Pushy1 Sprites You LegoCht
+dist_pkgdata_DATA = LegoLev Pushy1 Sprites You LegoCht Alphabet
