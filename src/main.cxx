@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 		GameObject *objects[P2_LEVEL_WIDTH * P2_LEVEL_HEIGHT];
 		std::vector<GameObject*> v_objects;
 		Player *p = NULL;
-		memset(objects, NULL, sizeof(objects));
+		memset(objects, 0, sizeof(objects));
 		objects_left = 0;
 		for (uint8_t i = 0; i < l[level].num_sprites; ++i)
 		{
