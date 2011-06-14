@@ -42,17 +42,29 @@
 // Implementation
 //
 
+Alphabet::~Alphabet()
+{
+	for (std::vector<SDL_Surface*>::iterator i = m_glyphs.begin();
+		i != m_glyphs.end(); ++i)
+	{
+		SDL_FreeSurface(*i);
+	}
+}
+
 Alphabet::Alphabet(const char *filename)
 {
-	// Open glyph set file
+	// Open glyph set file - at end, so we can determine size
 	std::ifstream setfile;
 	setfile.exceptions(std::ios::badbit | std::ios::failbit);
-	setfile.open(filename, std::ios_base::binary);
-	
+	setfile.open(filename, std::ios_base::binary | std::ios_base::ate);
+	size_t filesize = setfile.tellg();
+
 	// Read in 64 glyphs
 	// XXX Not sure if 64 glyphs is a hardcoded constant, or whether
 	// there's supposed to be some way to tell from the data
+	setfile.seekg(0);
 	m_glyphs.reserve(64);
+	m_glyph_y_offsets.reserve(64);
 	for (int i = 0; i < 64; ++i)
 	{
 		// Each glyph has an eight byte header - seek to it now
@@ -61,17 +73,78 @@ Alphabet::Alphabet(const char *filename)
 		// Four bytes: offset of glyph from start of file
 		// 32-bit, unsigned, little endian
 		unsigned char c[4];
-		setfile.read((char*)(&c), 4);
+		setfile.read((char*)(c), 4);
 		size_t offset = (c[0] | (c[1] << 8) | (c[2] << 16) | (c[3] << 24));
 
-		// Two bytes: unknown
-		setfile.read((char*)(&c), 2);
+		// Work out glyph size in bytes by comparing either to the offset of
+		// the next glyph, or by the known position of EOF
+		size_t bytes;
+		if (i < 63)
+		{
+			// Seek to next glyph header; read in offset
+			std::ofstream::pos_type saved_pos = setfile.tellg();
+			setfile.seekg(4, std::ios_base::cur);
+			setfile.read((char*)(c), 4);
+			size_t next_offset = (c[0] | (c[1] << 8) | (c[2] << 16) | (c[3] << 24));
+			bytes = next_offset - offset;
+			setfile.seekg(saved_pos);
+		}
+		else
+			bytes = filesize - offset;
+
+		// One byte: unknown
+		setfile.read((char*)(c), 1);
+
+		// One byte: glyph Y offset
+		// Some glyphs are shorter than others;
+		// offset Y coordinate by this much to line up
+		setfile.read((char*)(c), 1);
+		m_glyph_y_offsets.push_back(c[0]);
 
 		// Two bytes: glyph height in rows
 		// 16-bit, unsigned, little endian
-		setfile.read((char*)(&c), 2);
-		size_t height = (c[0] | (c[1] << 8));
+		setfile.read((char*)(c), 2);
+		uint16_t height = (c[0] | (c[1] << 8));
 
-		// TODO Read in data & store in a surface
+		// 8bpp (1 byte), so width is simply size / height
+		uint16_t width = (uint16_t)(bytes / (size_t)height);
+
+		// Original version appears to render glyphs at double width.
+		// Quick hack to make that work: make a double-width surface,
+		// and simply plot each colour value twice in a row.
+		SDL_Surface *tile = SDL_CreateRGBSurface(SDL_HWSURFACE, width * 2, height, 32,
+			0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000);
+
+		// Byte value 0x00 seems to be used for transparent
+		SDL_SetColorKey(tile, SDL_SRCCOLORKEY, SDL_MapRGB(tile->format, 0x00, 0x00, 0x00));
+
+		// Read in glyph data
+		unsigned char * buff = new unsigned char[bytes];
+		setfile.seekg(offset);
+		setfile.read((char*)(buff), bytes);
+
+		for (int y = 0; y < height; ++y)
+		{
+			size_t rowstart = y * tile->pitch;
+			size_t xoff = 0;
+			for (int x = 0; x < width; ++x)
+			{
+				// XXX Fill pixels with colour data, treating it as simple
+				// greyscale intensity values.  This is not correct, but is
+				// better than nothing in terms of a starting point.
+				unsigned char val = buff[(y * width) + x];
+				// Quick hack to double up glyph width.
+				for (int twice = 0; twice < 2; ++twice)
+				{
+					uint32_t *pixel = (uint32_t*)(((char*)tile->pixels) + rowstart + xoff);
+					*pixel = ((val >> tile->format->Rloss) << tile->format->Rshift)
+						| ((val >> tile->format->Gloss) << tile->format->Gshift)
+						| ((val >> tile->format->Bloss) << tile->format->Bshift);
+					xoff += tile->format->BytesPerPixel;
+				}
+			}
+		}
+
+		m_glyphs.push_back(tile);
 	}
 }

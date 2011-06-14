@@ -22,6 +22,11 @@
 
 // Class for rendering coloured strings
 // composed of glyphs loaded from the Alphabet file
+//
+// TODO Method for rendering a glyph with a selected
+// RGB value, for coloured level names.  Maybe storing
+// glyphs pre-converted to SDL surfaces isn't the way
+// to go?
 class Alphabet
 {
 	public:
@@ -33,6 +38,11 @@ class Alphabet
 			return m_glyphs[index];
 		};
 
+		uint8_t getYOffset(std::vector<uint8_t>::size_type index) const
+		{
+			return m_glyph_y_offsets[index];
+		};
+
 		std::vector<SDL_Surface*>::size_type numGlyphs() const
 		{
 			return m_glyphs.size();
@@ -40,6 +50,7 @@ class Alphabet
 
 	private:
 		std::vector<SDL_Surface*> m_glyphs;
+		std::vector<uint8_t> m_glyph_y_offsets;
 };
 
 #endif
