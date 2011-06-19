@@ -129,17 +129,46 @@ Alphabet::Alphabet(const char *filename)
 			size_t xoff = 0;
 			for (int x = 0; x < width; ++x)
 			{
-				// XXX Fill pixels with colour data, treating it as simple
-				// greyscale intensity values.  This is not correct, but is
-				// better than nothing in terms of a starting point.
-				unsigned char val = buff[(y * width) + x];
+				// XXX
+				// Glyphs are rendered a shaded greyscale outline,
+				// with a coloured inside.  This appears to be encoded
+				// in the original 8bpp data by nothing more than
+				// thresholding: intensities below a certain value are
+				// kept in greyscale, but artificially brightened to
+				// top out at 255 instead of the threshold value;
+				// intensities above are multiplied by the target
+				// RGB values (divided by 255 to give floats in the
+				// range 0..1).
+				// Experimentation seems to show that intensity
+				// values of 144 and above represent the inside.
+				uint8_t val = buff[(y * width) + x];
+				bool inside = false;
+				if (val > 0)
+				{
+					if (val < 144)
+						val += 112;
+					else
+						inside = true;
+				}
 				// Quick hack to double up glyph width.
 				for (int twice = 0; twice < 2; ++twice)
 				{
 					uint32_t *pixel = (uint32_t*)(((char*)tile->pixels) + rowstart + xoff);
-					*pixel = ((val >> tile->format->Rloss) << tile->format->Rshift)
-						| ((val >> tile->format->Gloss) << tile->format->Gshift)
-						| ((val >> tile->format->Bloss) << tile->format->Bshift);
+					if (inside)
+					{
+						uint8_t rval = val * 0.2;
+						uint8_t gval = val * 0.8;
+						uint8_t bval = val;
+						*pixel = ((rval >> tile->format->Rloss) << tile->format->Rshift)
+							| ((gval >> tile->format->Gloss) << tile->format->Gshift)
+							| ((bval >> tile->format->Bloss) << tile->format->Bshift);
+					}
+					else
+					{
+						*pixel = ((val >> tile->format->Rloss) << tile->format->Rshift)
+							| ((val >> tile->format->Gloss) << tile->format->Gshift)
+							| ((val >> tile->format->Bloss) << tile->format->Bshift);
+					}
 					xoff += tile->format->BytesPerPixel;
 				}
 			}
