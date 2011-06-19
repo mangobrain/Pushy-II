@@ -43,6 +43,7 @@
 #include "TileSet.hxx"
 #include "LevelSet.hxx"
 #include "GameObjects.hxx"
+#include "Alphabet.hxx"
 
 //
 // Implementation
@@ -139,6 +140,7 @@ int main(int argc, char *argv[])
 			<< P2_PKGDATADIR << "\": " << strerror(errno);
 		return 1;
 	}
+	Alphabet a("Alphabet");
 	LevelSet l("LegoLev");
 	const TileSet &t(l.getTiles());
 
@@ -159,6 +161,12 @@ int main(int argc, char *argv[])
 	int level = 0;
 	while (!quit)
 	{
+		// Render level name into a surface
+		SDL_Surface * name = a.renderWord(l[level].name,
+			l[level].name_colour[0],
+			l[level].name_colour[1],
+			l[level].name_colour[2]);
+
 		// Create GameObjects array
 		// Keep track of them in a vector too, regardless of their
 		// position in the game world, so we can render them without
@@ -241,10 +249,18 @@ int main(int argc, char *argv[])
 			{
 				(*i)->render(screen);
 			}
+
+			// Render level name
+			SDL_Rect rect = {
+				0, 0, 0, 0
+			};
+			SDL_BlitSurface(name, NULL, screen, &rect);
+
 			SDL_Flip(screen);
 			SDL_framerateDelay(&fpsm);
 		}
 		++level;
+		SDL_FreeSurface(name);
 	}
 
 	return 0;

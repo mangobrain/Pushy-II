@@ -21,36 +21,41 @@
 #include <vector>
 
 // Class for rendering coloured strings
-// composed of glyphs loaded from the Alphabet file
+// composed of glyphs loaded from the Alphabet file.
 //
-// TODO Method for rendering a glyph with a selected
-// RGB value, for coloured level names.  Maybe storing
-// glyphs pre-converted to SDL surfaces isn't the way
-// to go?
+// XXX Remember glyph data is quite narrow; graphics are
+// widened by simply doubling up the width of each column.
 class Alphabet
 {
 	public:
 		Alphabet(const char *filename);
-		~Alphabet();
 
-		SDL_Surface *operator[](std::vector<SDL_Surface*>::size_type index) const
-		{
-			return m_glyphs[index];
-		};
-
-		uint8_t getYOffset(std::vector<uint8_t>::size_type index) const
-		{
-			return m_glyph_y_offsets[index];
-		};
-
-		std::vector<SDL_Surface*>::size_type numGlyphs() const
-		{
-			return m_glyphs.size();
-		};
+		// Render a word onto a surface.  ASCII values without a corresponding
+		// glyph will be rendered as a hyphen.
+		//
+		// XXX NB: The returned surface is dynamically allocated, and must
+		// be freed by the caller using SDL_FreeSurface.
+		SDL_Surface *renderWord(const std::string &word,
+			unsigned char r = 255, unsigned char g = 255, unsigned char b = 255) const;
 
 	private:
-		std::vector<SDL_Surface*> m_glyphs;
-		std::vector<uint8_t> m_glyph_y_offsets;
+		struct Glyph
+		{
+			uint16_t width;
+			uint16_t height;
+			uint8_t x_offset;
+			uint8_t y_offset;
+			uint8_t * values;
+
+			Glyph();
+			~Glyph();
+		};
+
+		// We can get away with this storing Glyphs directly,
+		// rather than glyph pointers, because there is a fixed
+		// number of glyphs.  Reserving space ahead of time
+		// alleviates the need for assignment/copying of Glyphs.
+		std::vector<Glyph> m_glyphs;
 };
 
 #endif
