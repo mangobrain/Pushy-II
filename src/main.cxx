@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 
 			// Render level name
 			SDL_Rect rect = {
-				0, 0, 0, 0
+				50, 320, 0, 0
 			};
 			SDL_BlitSurface(name, NULL, screen, &rect);
 

@@ -22,9 +22,6 @@
 
 // Class for rendering coloured strings
 // composed of glyphs loaded from the Alphabet file.
-//
-// XXX Remember glyph data is quite narrow; graphics are
-// widened by simply doubling up the width of each column.
 class Alphabet
 {
 	public:

@@ -99,7 +99,6 @@ Alphabet::Alphabet(const char *filename)
 		// but offset the X position of the next glyph by an
 		// amount sometimes subtly different from their actual
 		// width - a primitive form of kerning
-		// Rember X offset values are already doubled
 		setfile.read((char*)(&(m_glyphs.back().x_offset)), 1);
 
 		// One byte: glyph Y offset
@@ -113,8 +112,8 @@ Alphabet::Alphabet(const char *filename)
 		setfile.read((char*)(c), 2);
 		m_glyphs.back().height = (c[0] | (c[1] << 8));
 
-		// 8bpp (1 byte), so width is simply size / height
-		m_glyphs.back().width = bytes / (size_t)(m_glyphs.back().height);
+		// 4bpp (2 pixels in 1 byte), so width is size / height * 2
+		m_glyphs.back().width = (bytes / (size_t)(m_glyphs.back().height)) * 2;
 
 		// Read in glyph data
 		m_glyphs.back().values = new uint8_t[bytes];
@@ -157,9 +156,7 @@ SDL_Surface * Alphabet::renderWord(const std::string &word,
 		// final width of surface.  For glyphs except the
 		// last, use the X offset (kerning) instead of
 		// the width of the glyph itself.
-		// Rember to double up glyph width, but that
-		// X offset values are pre-doubled.
-		width += (i < (word.length() - 1)) ? g.x_offset : (g.width * 2);
+		width += (i < (word.length() - 1)) ? g.x_offset : g.width;
 	}
 
 	// Create destination surface
@@ -180,19 +177,31 @@ SDL_Surface * Alphabet::renderWord(const std::string &word,
 			size_t xoff = glyph_horz_start * surf->format->BytesPerPixel;
 			for (int x = 0; x < g.width; ++x)
 			{
-				// XXX
 				// Glyphs are rendered a shaded greyscale outline,
 				// with a coloured inside.  This appears to be encoded
-				// in the original 8bpp data by nothing more than
-				// thresholding: intensities below a certain value are
+				// in the original 4bpp data by nothing more than
+				// thresholding: intensities <= 128 (after expanding
+				// back to the range 0..255 by bitshifting) are
 				// kept in greyscale, but artificially brightened to
 				// top out at 255 instead of the threshold value;
 				// intensities above are multiplied by the target
 				// RGB values (divided by 255 to give floats in the
 				// range 0..1).
-				// Experimentation seems to show that intensity
-				// values of 144 and above represent the inside.
-				uint8_t val = g.values[(y * g.width) + x];
+				//
+				// X value is based on whole pixels, we need an index
+				// into the original packed 4bpp data.
+				uint8_t val;
+				if (x % 2)
+				{
+					// High 4 bits
+					val = g.values[(y * (g.width / 2)) + (x / 2)] & 0xF0;
+				}
+				else
+				{
+					// Low 4 bits
+					val = g.values[(y * (g.width / 2)) + (x / 2)] << 4;
+				}
+
 				// Ignore intensity values of 0 completely, so that
 				// glyphs don't blat the right-hand edge of the glyph
 				// to their left with transparency (they can overlap
@@ -200,44 +209,39 @@ SDL_Surface * Alphabet::renderWord(const std::string &word,
 				if (val > 0)
 				{
 					bool inside = false;
-					if (val < 144)
-						val += 112;
+					if (val <= 128)
+						val += 127;
 					else
 						inside = true;
-					// Quick hack to double up column width.
-					for (int twice = 0; twice < 2; ++twice)
+
+					uint32_t *pixel = (uint32_t*)(((char*)surf->pixels) + rowstart + xoff);
+					if (inside)
 					{
-						uint32_t *pixel = (uint32_t*)(((char*)surf->pixels) + rowstart + xoff);
-						if (inside)
-						{
-							uint8_t rval = val * fr;
-							uint8_t gval = val * fg;
-							uint8_t bval = val * fb;
-							*pixel = ((rval >> surf->format->Rloss) << surf->format->Rshift)
-								| ((gval >> surf->format->Gloss) << surf->format->Gshift)
-								| ((bval >> surf->format->Bloss) << surf->format->Bshift);
-						}
-						else
-						{
-							*pixel = ((val >> surf->format->Rloss) << surf->format->Rshift)
-								| ((val >> surf->format->Gloss) << surf->format->Gshift)
-								| ((val >> surf->format->Bloss) << surf->format->Bshift);
-						}
-						xoff += surf->format->BytesPerPixel;
-					} // render value twice in X
+						uint8_t rval = val * fr;
+						uint8_t gval = val * fg;
+						uint8_t bval = val * fb;
+						*pixel = ((rval >> surf->format->Rloss) << surf->format->Rshift)
+							| ((gval >> surf->format->Gloss) << surf->format->Gshift)
+							| ((bval >> surf->format->Bloss) << surf->format->Bshift);
+					}
+					else
+					{
+						*pixel = ((val >> surf->format->Rloss) << surf->format->Rshift)
+							| ((val >> surf->format->Gloss) << surf->format->Gshift)
+							| ((val >> surf->format->Bloss) << surf->format->Bshift);
+					}
+					xoff += surf->format->BytesPerPixel;
 				}
 				else
 				{
 					// However, since we work with pixel pointer arithmetic,
 					// we must still increase our X offset to compensate.
-					// Remember to double up on column width.
-					xoff += surf->format->BytesPerPixel * 2;
+					xoff += surf->format->BytesPerPixel;
 				}
 			} // loop over X
 		} // loop over Y
 
 		// Offset start of next glyph by X offset of this one
-		// Rember X offset values are already doubled
 		glyph_horz_start += g.x_offset;
 	}
 
