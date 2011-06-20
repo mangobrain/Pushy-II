@@ -158,8 +158,22 @@ int main(int argc, char *argv[])
 	SDL_setFramerate(&fpsm, 30);
 	SDL_SetEventFilter(event_filter);
 
-	int level = 0;
-	while (!quit)
+	// Accept passwords on the command line
+	size_t level = 0;
+	if (optind < argc)
+	{
+		std::string password = argv[optind];
+		for (size_t i = 0; i < l.size(); ++i)
+		{
+			if (l[level].name == password)
+				break;
+			++level;
+		}
+		if (level == l.size())
+			level = 0;
+	}
+
+	while (!quit && (level < l.size()))
 	{
 		// Render level name into a surface
 		SDL_Surface * name = a.renderWord(l[level].name,
