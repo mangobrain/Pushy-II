@@ -40,9 +40,9 @@
 // Implementation
 //
 
-#define PLAYER_SPEED 4
-#define PUSH_SPEED 2
-#define ROLL_SPEED 4
+#define PLAYER_SPEED 4.0f
+#define PUSH_SPEED 2.0f
+#define ROLL_SPEED 4.0f
 
 extern int objects_left;
 
@@ -127,21 +127,59 @@ Player::Player(const TileSet *sprites, const uint8_t *tilemap,
 	AnimableObject(x, y), m_speed(PLAYER_SPEED), m_busy(false), m_push_momentum(0), m_straining(false)
 {}
 
-bool AnimableObject::arrived(uint8_t x, uint8_t y) const
+bool AnimableObject::slideTo(uint8_t x, uint8_t y, float speed)
 {
-	return ((m_anim_x == (uint32_t)x * P2_TILE_WIDTH) && (m_anim_y == (uint32_t)y * P2_TILE_HEIGHT));
-}
-
-void AnimableObject::slideTo(uint8_t x, uint8_t y, uint32_t speed)
-{
-	if (m_anim_x > (uint32_t)x * P2_TILE_WIDTH)
+	if (m_anim_x > (float)x * (float)P2_TILE_WIDTH)
+	{
 		m_anim_x -= speed;
-	else if (m_anim_x < (uint32_t)x * P2_TILE_WIDTH)
+		if (m_anim_x <= (float)x * (float)P2_TILE_WIDTH)
+		{
+			m_anim_x = x * P2_TILE_WIDTH;
+			return true;
+		}
+		else
+			return false;
+	}
+
+	if (m_anim_x < (float)x * (float)P2_TILE_WIDTH)
+	{
 		m_anim_x += speed;
-	else if (m_anim_y > (uint32_t)y * P2_TILE_HEIGHT)
+		if (m_anim_x >= (float)x * (float)P2_TILE_WIDTH)
+		{
+			m_anim_x = x * P2_TILE_WIDTH;
+			return true;
+		}
+		else
+			return false;
+	}
+
+	if (m_anim_y > (float)y * (float)P2_TILE_HEIGHT)
+	{
 		m_anim_y -= speed;
-	else if (m_anim_y < (uint32_t)y * P2_TILE_HEIGHT)
+		if (m_anim_y <= (float)y * (float)P2_TILE_HEIGHT)
+		{
+			m_anim_y = y * P2_TILE_HEIGHT;
+			return true;
+		}
+		else
+			return false;
+	}
+
+	if (m_anim_y < (float)y * (float)P2_TILE_HEIGHT)
+	{
 		m_anim_y += speed;
+		if (m_anim_y >= (float)y * (float)P2_TILE_HEIGHT)
+		{
+			m_anim_y = y * P2_TILE_HEIGHT;
+			return true;
+		}
+		else
+			return false;
+	}
+
+	// We're already there, since our coordinates didn't
+	// differ from those of our destination
+	return true;
 }
 
 bool Ball::rolls() const
@@ -241,8 +279,7 @@ void Ball::render(SDL_Surface *screen)
 {
 	if (m_rolling)
 	{
-		slideTo(m_x, m_y, m_speed);
-		if (arrived(m_x, m_y))
+		if (slideTo(m_x, m_y, m_speed))
 			m_rolling = false;
 		// First half of first square is slid to at
 		// half normal speed, the momentum picks up
@@ -328,8 +365,8 @@ void Ball::render(SDL_Surface *screen)
 
 void Box::render(SDL_Surface *screen)
 {
-	slideTo(m_x, m_y, PUSH_SPEED);
-	if (!m_defused && tileIsCross(m_x, m_y) && arrived(m_x, m_y))
+	bool arrived = slideTo(m_x, m_y, PUSH_SPEED);
+	if (!m_defused && tileIsCross(m_x, m_y) && arrived)
 	{
 		// We've arived on a cross
 		--objects_left;
@@ -396,9 +433,7 @@ void Player::render(SDL_Surface *screen)
 {
 	if (m_busy)
 	{
-		slideTo(m_x, m_y, m_speed);
-
-		if (arrived(m_x, m_y))
+		if (slideTo(m_x, m_y, m_speed))
 		{
 			// We've arrived - we have finished pushing for now
 			m_speed = PLAYER_SPEED;

@@ -55,12 +55,14 @@ class AnimableObject
 		AnimableObject(uint8_t ax, uint8_t ay);
 		virtual ~AnimableObject() {};
 	protected:
-		uint32_t m_anim_x;
-		uint32_t m_anim_y;
+		float m_anim_x;
+		float m_anim_y;
 		uint8_t m_anim_index;
 		uint8_t m_anim_state;
-		bool arrived(uint8_t x, uint8_t y) const;
-		void slideTo(uint8_t x, uint8_t y, uint32_t speed);
+
+		// Move object to given destination square at given speed.
+		// Returns true when arrived.
+		bool slideTo(uint8_t x, uint8_t y, float speed);
 };
 
 class PushableObject: public GameObject, public AnimableObject
@@ -88,8 +90,8 @@ class Ball: public PushableObject
 		void render(SDL_Surface *screen);
 	private:
 		bool m_rolling;
-		uint32_t m_speed;
-		uint32_t m_roll_momentum;
+		float m_speed;
+		float m_roll_momentum;
 };
 
 class Box: public PushableObject
@@ -112,9 +114,9 @@ class Player: public GameObject, AnimableObject
 		void render(SDL_Surface *screen);
 		void move(Direction d);
 	private:
-		uint32_t m_speed;
+		float m_speed;
 		bool m_busy;
-		uint32_t m_push_momentum;
+		float m_push_momentum;
 		bool m_straining;
 };
 
