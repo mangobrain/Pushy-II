@@ -35,7 +35,6 @@
 
 // Library
 #include <SDL.h>
-#include <SDL_framerate.h>
 #include <getopt.h>
 
 // Local
@@ -147,16 +146,18 @@ int main(int argc, char *argv[])
 	//
 	// XXX Prototype code XXX
 	//
+	Uint32 flags = SDL_HWSURFACE | SDL_DOUBLEBUF;
 	SDL_Surface *screen = SDL_SetVideoMode(
 		P2_TILE_WIDTH * P2_LEVEL_WIDTH,
 		P2_TILE_HEIGHT * P2_LEVEL_HEIGHT,
-		24, SDL_HWSURFACE | SDL_DOUBLEBUF
+		24, flags
 	);
 	bool quit = false;
-	FPSmanager fpsm;
-	SDL_initFramerate(&fpsm);
-	SDL_setFramerate(&fpsm, 30);
 	SDL_SetEventFilter(event_filter);
+	// Did we actually get a hardware, double-buffered surface?
+	// If not, it probably isn't vsynced, and we should include
+	// a sleep in the main loop
+	bool delay = ((screen->flags & flags) != flags);
 
 	// Accept passwords on the command line
 	size_t level = 0;
@@ -218,6 +219,9 @@ int main(int argc, char *argv[])
 		// One object is the player
 		--objects_left;
 
+		Uint32 frametime = SDL_GetTicks();
+		Uint32 old_frametime = frametime;
+
 		while (!quit && objects_left > 0)
 		{
 			// Process events
@@ -261,7 +265,7 @@ int main(int argc, char *argv[])
 			for (std::vector<GameObject*>::const_iterator i = v_objects.begin();
 				i != v_objects.end(); ++i)
 			{
-				(*i)->render(screen);
+				(*i)->render(screen, frametime - old_frametime);
 			}
 
 			// Render level name
@@ -271,7 +275,11 @@ int main(int argc, char *argv[])
 			SDL_BlitSurface(name, NULL, screen, &rect);
 
 			SDL_Flip(screen);
-			SDL_framerateDelay(&fpsm);
+			if (delay)
+				SDL_Delay(10);
+
+			old_frametime = frametime;
+			frametime = SDL_GetTicks();
 		}
 		++level;
 		SDL_FreeSurface(name);

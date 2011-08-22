@@ -275,7 +275,7 @@ void Box::push(Direction d)
 	m_y = cy;
 }
 
-void Ball::render(SDL_Surface *screen)
+void Ball::render(SDL_Surface *screen, Uint32 ms_elapsed)
 {
 	if (m_rolling)
 	{
@@ -363,7 +363,7 @@ void Ball::render(SDL_Surface *screen)
 	SDL_BlitSurface(sprite, NULL, screen, &rect);
 }
 
-void Box::render(SDL_Surface *screen)
+void Box::render(SDL_Surface *screen, Uint32 ms_elapsed)
 {
 	bool arrived = slideTo(m_x, m_y, PUSH_SPEED);
 	if (!m_defused && tileIsCross(m_x, m_y) && arrived)
@@ -429,7 +429,7 @@ void Box::render(SDL_Surface *screen)
 	SDL_BlitSurface(sprite, NULL, screen, &rect);
 }
 
-void Player::render(SDL_Surface *screen)
+void Player::render(SDL_Surface *screen, Uint32 ms_elapsed)
 {
 	if (m_busy)
 	{

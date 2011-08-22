@@ -48,20 +48,6 @@ dnl # Use pkg-config to find various dependencies
 PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([SDL], [sdl >= 1.2])
 
-dnl # Older versions of SDL_gfx don't provide pkg-config support,
-dnl # so check for it manually
-AC_CHECK_HEADERS_ONCE([SDL_framerate.h])
-AS_IF(
-	[test "x$ac_cv_header_SDL_framerate_h" != "xyes"],
-	[AC_MSG_ERROR([We need SDL_framerate.h for framerate limiting!])]
-)
-AC_CHECK_LIB(
-	[SDL_gfx],
-	[SDL_initFramerate],
-	[],
-	[AC_MSG_ERROR([We need libSDL_gfx from framerate limiting!])]
-)
-
 dnl # We use getopt_long for parsing our command-line options
 AC_CHECK_HEADERS_ONCE([getopt.h])
 AS_IF(
