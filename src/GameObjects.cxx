@@ -43,7 +43,8 @@
 
 #define PLAYER_SPEED 120.0f
 #define PUSH_SPEED 50.0f
-#define ROLL_SPEED 120.0f
+#define ROLL_SPEED 180.0f
+#define ROLL_ACCEL 80.0f
 
 extern int objects_left;
 
@@ -112,7 +113,7 @@ Ball::Ball(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
 	uint8_t first_floor_tile, uint8_t first_cross_tile)
 	:PushableObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
-	m_rolling(false), m_speed(PUSH_SPEED), m_roll_momentum(0)
+	m_rolling(false), m_speed(PUSH_SPEED)
 {}
 
 Box::Box(const TileSet *sprites, const uint8_t *tilemap,
@@ -125,7 +126,7 @@ Player::Player(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
 	uint8_t first_floor_tile, uint8_t first_cross_tile)
 	:GameObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
-	AnimableObject(x, y), m_speed(PLAYER_SPEED), m_busy(false), m_push_momentum(0), m_straining(false)
+	AnimableObject(x, y), m_speed(PLAYER_SPEED), m_busy(false), m_straining(false)
 {}
 
 int AnimableObject::advanceAnim(float elapsed)
@@ -194,11 +195,6 @@ bool AnimableObject::slideTo(uint8_t x, uint8_t y, float speed, float elapsed)
 	return true;
 }
 
-bool Ball::rolls() const
-{
-	return true;
-}
-
 void Ball::push(Direction d)
 {
 	// Immediately move to the furthest empty square in the given direction
@@ -254,12 +250,6 @@ void Ball::push(Direction d)
 	m_y = cy;
 	m_rolling = true;
 	m_speed = PUSH_SPEED;
-	m_roll_momentum = 0;
-}
-
-bool Box::rolls() const
-{
-	return false;
 }
 
 void Box::push(Direction d)
@@ -293,10 +283,15 @@ void Ball::render(SDL_Surface *screen, float elapsed)
 	{
 		if (slideTo(m_x, m_y, m_speed, elapsed))
 			m_rolling = false;
-		// First half of first square is slid to at
-		// half normal speed, the momentum picks up
-		if ((m_roll_momentum += (m_speed * elapsed)) >= (float)(P2_TILE_WIDTH / 2))
-			m_speed = ROLL_SPEED;
+
+		// Balls start at pushing speed, and accelerate
+		// to rolling speed as they are pushed
+		if (m_speed < ROLL_SPEED)
+		{
+			m_speed += ROLL_ACCEL * elapsed;
+			if (m_speed > ROLL_SPEED)
+				m_speed = ROLL_SPEED;
+		}
 	}
 	// Check (when arrived) whether destination is a cross, and defuse
 	if (!m_rolling && !m_defused && tileIsCross(m_x, m_y))
@@ -432,17 +427,6 @@ void Player::render(SDL_Surface *screen, float elapsed)
 			m_speed = PLAYER_SPEED;
 			m_busy = false;
 		}
-
-		// If we're pushing a rolling object, eventually
-		// it picks up speed and we can move more freely
-		if (m_push_momentum > 0.0f)
-		{
-			if ((m_push_momentum -= (PUSH_SPEED * elapsed)) <= 0.0f)
-			{
-				m_speed = PLAYER_SPEED;
-				m_straining = false;
-			}
-		}
 	}
 
 	// Animate up/down/left/right loops
@@ -521,9 +505,6 @@ void Player::move(Direction d)
 					((PushableObject*)o)->push(d);
 					// We're straining - reduce movement speed
 					m_speed = PUSH_SPEED;
-					// But maybe only for half a square
-					if (((PushableObject*)o)->rolls())
-						m_push_momentum = P2_TILE_WIDTH / 2;
 				}
 				else
 					return;

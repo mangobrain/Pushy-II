@@ -79,7 +79,6 @@ class PushableObject: public GameObject, public AnimableObject
 			uint8_t x, uint8_t y, GameObject **objects,
 			uint8_t first_floor_tile, uint8_t first_cross_tile);
 		bool canMove(Direction d) const;
-		virtual bool rolls() const = 0;
 		virtual void push(Direction d) = 0;
 		virtual ~PushableObject() {};
 	protected:
@@ -92,13 +91,11 @@ class Ball: public PushableObject
 		Ball(const TileSet *sprites, const uint8_t *tilemap,
 			uint8_t x, uint8_t y, GameObject **objects,
 			uint8_t first_floor_tile, uint8_t first_cross_tile);
-		bool rolls() const;
 		void push(Direction d);
 		void render(SDL_Surface *screen, float elapsed);
 	private:
 		bool m_rolling;
 		float m_speed;
-		float m_roll_momentum;
 };
 
 class Box: public PushableObject
@@ -107,7 +104,6 @@ class Box: public PushableObject
 		Box(const TileSet *sprites, const uint8_t *tilemap,
 			uint8_t x, uint8_t y, GameObject **objects,
 			uint8_t first_floor_tile, uint8_t first_cross_tile);
-		bool rolls() const;
 		void push(Direction d);
 		void render(SDL_Surface *screen, float elapsed);
 };
@@ -123,7 +119,6 @@ class Player: public GameObject, AnimableObject
 	private:
 		float m_speed;
 		bool m_busy;
-		float m_push_momentum;
 		bool m_straining;
 };
 
