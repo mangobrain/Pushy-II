@@ -23,7 +23,7 @@ class GameObject
 		GameObject(const TileSet *sprites, const uint8_t *tilemap,
 			uint8_t x, uint8_t y, GameObject **objects,
 			uint8_t first_floor_tile, uint8_t first_cross_tile);
-		virtual void render(SDL_Surface *screen, Uint32 ms_elapsed) = 0;
+		virtual void render(SDL_Surface *screen, float elapsed) = 0;
 		virtual ~GameObject() {};
 
 	protected:
@@ -57,12 +57,19 @@ class AnimableObject
 	protected:
 		float m_anim_x;
 		float m_anim_y;
+		float m_anim_fps;
 		uint8_t m_anim_index;
 		uint8_t m_anim_state;
 
 		// Move object to given destination square at given speed.
 		// Returns true when arrived.
-		bool slideTo(uint8_t x, uint8_t y, float speed);
+		bool slideTo(uint8_t x, uint8_t y, float speed, float elapsed);
+
+		// Return number of frames by which to advance animation
+		int advanceAnim(float elapsed);
+
+	private:
+		float m_anim_frames_elapsed;
 };
 
 class PushableObject: public GameObject, public AnimableObject
@@ -87,7 +94,7 @@ class Ball: public PushableObject
 			uint8_t first_floor_tile, uint8_t first_cross_tile);
 		bool rolls() const;
 		void push(Direction d);
-		void render(SDL_Surface *screen, Uint32 ms_elapsed);
+		void render(SDL_Surface *screen, float elapsed);
 	private:
 		bool m_rolling;
 		float m_speed;
@@ -102,7 +109,7 @@ class Box: public PushableObject
 			uint8_t first_floor_tile, uint8_t first_cross_tile);
 		bool rolls() const;
 		void push(Direction d);
-		void render(SDL_Surface *screen, Uint32 ms_elapsed);
+		void render(SDL_Surface *screen, float elapsed);
 };
 
 class Player: public GameObject, AnimableObject
@@ -111,7 +118,7 @@ class Player: public GameObject, AnimableObject
 		Player(const TileSet *sprites, const uint8_t *tilemap,
 			uint8_t x, uint8_t y, GameObject **objects,
 			uint8_t first_floor_tile, uint8_t first_cross_tile);
-		void render(SDL_Surface *screen, Uint32 ms_elapsed);
+		void render(SDL_Surface *screen, float elapsed);
 		void move(Direction d);
 	private:
 		float m_speed;

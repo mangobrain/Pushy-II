@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
 			for (std::vector<GameObject*>::const_iterator i = v_objects.begin();
 				i != v_objects.end(); ++i)
 			{
-				(*i)->render(screen, frametime - old_frametime);
+				(*i)->render(screen, (float)(frametime - old_frametime) / 1000.0);
 			}
 
 			// Render level name

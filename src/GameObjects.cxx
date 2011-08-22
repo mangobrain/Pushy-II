@@ -25,6 +25,7 @@
 #endif
 
 // Language
+#include <cmath>
 
 // System
 
@@ -40,9 +41,9 @@
 // Implementation
 //
 
-#define PLAYER_SPEED 4.0f
-#define PUSH_SPEED 2.0f
-#define ROLL_SPEED 4.0f
+#define PLAYER_SPEED 120.0f
+#define PUSH_SPEED 50.0f
+#define ROLL_SPEED 120.0f
 
 extern int objects_left;
 
@@ -104,7 +105,7 @@ PushableObject::PushableObject(const TileSet *sprites, const uint8_t *tilemap,
 
 AnimableObject::AnimableObject(uint8_t ax, uint8_t ay)
 	:m_anim_x(ax * P2_TILE_WIDTH), m_anim_y(ay * P2_TILE_HEIGHT),
-	m_anim_index(0), m_anim_state(0)
+	m_anim_fps(15), m_anim_index(0), m_anim_state(0), m_anim_frames_elapsed(0.0f)
 {}
 
 Ball::Ball(const TileSet *sprites, const uint8_t *tilemap,
@@ -127,11 +128,22 @@ Player::Player(const TileSet *sprites, const uint8_t *tilemap,
 	AnimableObject(x, y), m_speed(PLAYER_SPEED), m_busy(false), m_push_momentum(0), m_straining(false)
 {}
 
-bool AnimableObject::slideTo(uint8_t x, uint8_t y, float speed)
+int AnimableObject::advanceAnim(float elapsed)
 {
+	m_anim_frames_elapsed += m_anim_fps * elapsed;
+
+	int whole_frames_elapsed = floorf(m_anim_frames_elapsed);
+	m_anim_frames_elapsed -= (float)whole_frames_elapsed;
+
+	return whole_frames_elapsed;
+}
+
+bool AnimableObject::slideTo(uint8_t x, uint8_t y, float speed, float elapsed)
+{
+	float amount = speed * elapsed;
 	if (m_anim_x > (float)x * (float)P2_TILE_WIDTH)
 	{
-		m_anim_x -= speed;
+		m_anim_x -= amount;
 		if (m_anim_x <= (float)x * (float)P2_TILE_WIDTH)
 		{
 			m_anim_x = x * P2_TILE_WIDTH;
@@ -143,7 +155,7 @@ bool AnimableObject::slideTo(uint8_t x, uint8_t y, float speed)
 
 	if (m_anim_x < (float)x * (float)P2_TILE_WIDTH)
 	{
-		m_anim_x += speed;
+		m_anim_x += amount;
 		if (m_anim_x >= (float)x * (float)P2_TILE_WIDTH)
 		{
 			m_anim_x = x * P2_TILE_WIDTH;
@@ -155,7 +167,7 @@ bool AnimableObject::slideTo(uint8_t x, uint8_t y, float speed)
 
 	if (m_anim_y > (float)y * (float)P2_TILE_HEIGHT)
 	{
-		m_anim_y -= speed;
+		m_anim_y -= amount;
 		if (m_anim_y <= (float)y * (float)P2_TILE_HEIGHT)
 		{
 			m_anim_y = y * P2_TILE_HEIGHT;
@@ -167,7 +179,7 @@ bool AnimableObject::slideTo(uint8_t x, uint8_t y, float speed)
 
 	if (m_anim_y < (float)y * (float)P2_TILE_HEIGHT)
 	{
-		m_anim_y += speed;
+		m_anim_y += amount;
 		if (m_anim_y >= (float)y * (float)P2_TILE_HEIGHT)
 		{
 			m_anim_y = y * P2_TILE_HEIGHT;
@@ -275,15 +287,15 @@ void Box::push(Direction d)
 	m_y = cy;
 }
 
-void Ball::render(SDL_Surface *screen, Uint32 ms_elapsed)
+void Ball::render(SDL_Surface *screen, float elapsed)
 {
 	if (m_rolling)
 	{
-		if (slideTo(m_x, m_y, m_speed))
+		if (slideTo(m_x, m_y, m_speed, elapsed))
 			m_rolling = false;
 		// First half of first square is slid to at
 		// half normal speed, the momentum picks up
-		if ((m_roll_momentum += m_speed) >= P2_TILE_WIDTH / 2)
+		if ((m_roll_momentum += (m_speed * elapsed)) >= (float)(P2_TILE_WIDTH / 2))
 			m_speed = ROLL_SPEED;
 	}
 	// Check (when arrived) whether destination is a cross, and defuse
@@ -298,74 +310,60 @@ void Ball::render(SDL_Surface *screen, Uint32 ms_elapsed)
 		++objects_left;
 		m_defused = false;
 	}
-	// 8-14 = on fire, 15-19 = defused
-	// minus 8, that makes 0-6 = on fire, 7-11 defused
-	// double up frame indexes to slow down animation rate
-	switch (m_anim_state)
+
+	int count = advanceAnim(elapsed);
+
+	while (count--)
 	{
-		case 0:
-			// on fire - animation looping upwards
-			if (++m_anim_index == 13)
-			{
-				if (m_defused)
-					m_anim_state = 2;
-				else
+		// 8-14 = on fire, 15-19 = defused
+		// minus 8, that makes 0-6 = on fire, 7-11 defused
+		// double up frame indexes to slow down animation rate
+		switch (m_anim_state)
+		{
+			case 0:
+				// on fire - animation looping upwards
+				if (++m_anim_index == 6)
 				{
-					m_anim_state = 1;
-					// Don't stay at loop end frame
-					// for three frames in a row
-					--m_anim_index;
+					if (m_defused)
+						m_anim_state = 2;
+					else
+						m_anim_state = 1;
 				}
-			}
-			break;
-		case 1:
-			// on fire - animation looping downwards
-			if (--m_anim_index == 0)
-			{
-				m_anim_state = 0;
-				// Don't stay at loop end frame
-				// for three frames in a row
-				++m_anim_index;
-			}
-			break;
-		case 2:
-			// defused - looping upwards
-			if (++m_anim_index == 23)
-			{
-				m_anim_state = 3;
-				// Don't stay at loop end frame
-				// for three frames in a row
-				--m_anim_index;
-			}
-			break;
-		case 3:
-			// defused - looping downwards
-			if (--m_anim_index == 14)
-			{
-				if (m_defused)
+				break;
+			case 1:
+				// on fire - animation looping downwards
+				if (--m_anim_index == 0)
+					m_anim_state = 0;
+				break;
+			case 2:
+				// defused - looping upwards
+				if (++m_anim_index == 11)
+					m_anim_state = 3;
+				break;
+			case 3:
+				// defused - looping downwards
+				if (--m_anim_index == 7)
 				{
-					m_anim_state = 2;
-					// Don't stay at loop end frame
-					// for three frames in a row
-					++m_anim_index;
+					if (m_defused)
+						m_anim_state = 2;
+					else
+						m_anim_state = 1;
 				}
-				else
-					m_anim_state = 1;
-			}
+		}
 	}
+
 	SDL_Rect rect = {
 		m_anim_x, m_anim_y,
 		0, 0
 	};
-	// frame indexes are doubled to slow down animation rates
-	// halve them before accessing the sprite array
-	SDL_Surface *sprite = (*m_sprites)[(m_anim_index / 2) + 8];
+
+	SDL_Surface *sprite = (*m_sprites)[m_anim_index + 8];
 	SDL_BlitSurface(sprite, NULL, screen, &rect);
 }
 
-void Box::render(SDL_Surface *screen, Uint32 ms_elapsed)
+void Box::render(SDL_Surface *screen, float elapsed)
 {
-	bool arrived = slideTo(m_x, m_y, PUSH_SPEED);
+	bool arrived = slideTo(m_x, m_y, PUSH_SPEED, elapsed);
 	if (!m_defused && tileIsCross(m_x, m_y) && arrived)
 	{
 		// We've arived on a cross
@@ -384,56 +382,51 @@ void Box::render(SDL_Surface *screen, Uint32 ms_elapsed)
 		m_anim_x, m_anim_y,
 		0, 0
 	};
-	// animation frame indexes:
-	// 0-6 = on fire, 7 = defused
-	switch (m_anim_state)
+
+	int count = advanceAnim(elapsed);
+
+	while (count--)
 	{
-		case 0:
-			// on fire - animation looping forwards
-			// double up frame indexes to slow down animation rate
-			if (++m_anim_index == 13)
-			{
-				if (m_defused)
-					m_anim_state = 2;
-				else
+		// animation frame indexes:
+		// 0-6 = on fire, 7 = defused
+		switch (m_anim_state)
+		{
+			case 0:
+				// on fire - animation looping forwards
+				// double up frame indexes to slow down animation rate
+				if (++m_anim_index == 6)
 				{
-					m_anim_state = 1;
-					// Don't stay at loop end frame
-					// for three frames in a row
-					--m_anim_index;
+					if (m_defused)
+						m_anim_state = 2;
+					else
+						m_anim_state = 1;
 				}
-			}
-			break;
-		case 1:
-			// on fire - animation looping backwards
-			if (--m_anim_index == 0)
-			{
-				m_anim_state = 0;
-				// Don't stay at loop end frame
-				// for three frames in a row
-				++m_anim_index;
-			}
-			break;
-		case 2:
-			// defused
-			m_anim_index = 14;
-			if (!m_defused)
-			{
-				--m_anim_index;
-				m_anim_state = 1;
-			}
+				break;
+			case 1:
+				// on fire - animation looping backwards
+				if (--m_anim_index == 0)
+					m_anim_state = 0;
+				break;
+			case 2:
+				// defused
+				m_anim_index = 7;
+				if (!m_defused)
+				{
+					--m_anim_index;
+					m_anim_state = 1;
+				}
+		}
 	}
-	// frame indexes are doubled to slow down animation rates
-	// halve them before accessing the sprite array
-	SDL_Surface *sprite = (*m_sprites)[m_anim_index / 2];
+
+	SDL_Surface *sprite = (*m_sprites)[m_anim_index];
 	SDL_BlitSurface(sprite, NULL, screen, &rect);
 }
 
-void Player::render(SDL_Surface *screen, Uint32 ms_elapsed)
+void Player::render(SDL_Surface *screen, float elapsed)
 {
 	if (m_busy)
 	{
-		if (slideTo(m_x, m_y, m_speed))
+		if (slideTo(m_x, m_y, m_speed, elapsed))
 		{
 			// We've arrived - we have finished pushing for now
 			m_speed = PLAYER_SPEED;
@@ -442,25 +435,30 @@ void Player::render(SDL_Surface *screen, Uint32 ms_elapsed)
 
 		// If we're pushing a rolling object, eventually
 		// it picks up speed and we can move more freely
-		if (m_push_momentum > 0)
+		if (m_push_momentum > 0.0f)
 		{
-			if ((m_push_momentum -= PUSH_SPEED) == 0)
+			if ((m_push_momentum -= (PUSH_SPEED * elapsed)) <= 0.0f)
 			{
 				m_speed = PLAYER_SPEED;
 				m_straining = false;
 			}
 		}
 	}
+
 	// Animate up/down/left/right loops
-	// All are 6 frames long, but go too quickly at 30fps,
-	// so count to 12 and only step every other frame
-	if (++m_anim_index == 12)
-		m_anim_index = 0;
+	// All are 6 frames long
+	int count = advanceAnim(elapsed);
+	while (count--)
+	{
+		if (++m_anim_index == 6)
+			m_anim_index = 0;
+	}
+
 	SDL_Rect rect = {
 		m_anim_x, m_anim_y,
 		0, 0
 	};
-	SDL_Surface *sprite = (*m_sprites)[(m_anim_index / 2) + m_anim_state + (m_straining ? 24 : 0)];
+	SDL_Surface *sprite = (*m_sprites)[m_anim_index + m_anim_state + (m_straining ? 24 : 0)];
 	SDL_BlitSurface(sprite, NULL, screen, &rect);
 	// If player pushed against a wall, only stay in the left/right/up/down
 	// animation for one frame, unless they keep the key held down
