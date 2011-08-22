@@ -205,7 +205,7 @@ void Ball::push(Direction d)
 	switch (d)
 	{
 		case Up:
-			for (cy = m_y - 1; cy > 0; --cy)
+			for (cy = m_y - 1; cy >= 0; --cy)
 			{
 				if (!tileIsEmpty(m_x, cy) || m_objects[(cy * P2_LEVEL_WIDTH) + m_x])
 				{
@@ -225,7 +225,7 @@ void Ball::push(Direction d)
 			}
 			break;
 		case Left:
-			for (cx = m_x - 1; cx > 0; --cx)
+			for (cx = m_x - 1; cx >= 0; --cx)
 			{
 				if (!tileIsEmpty(cx, m_y) || m_objects[(m_y * P2_LEVEL_WIDTH) + cx])
 				{
