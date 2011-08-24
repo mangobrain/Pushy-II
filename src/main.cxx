@@ -29,6 +29,7 @@
 #include <cerrno>
 #include <cstring>
 #include <cstdlib>
+#include <memory>
 
 // System
 #include <unistd.h>
@@ -43,11 +44,15 @@
 #include "LevelSet.hxx"
 #include "GameObjects.hxx"
 #include "Alphabet.hxx"
+#include "GameLoop.hxx"
+#include "InGame.hxx"
+
 
 //
 // Implementation
 //
 
+// TODO Stop this being a global, it's nasty
 int objects_left = 0;
 
 int event_filter(const SDL_Event *event)
@@ -141,23 +146,22 @@ int main(int argc, char *argv[])
 	}
 	Alphabet a("Alphabet");
 	LevelSet l("LegoLev");
-	const TileSet &t(l.getTiles());
 
-	//
-	// XXX Prototype code XXX
-	//
 	Uint32 flags = SDL_HWSURFACE | SDL_DOUBLEBUF;
 	SDL_Surface *screen = SDL_SetVideoMode(
 		P2_TILE_WIDTH * P2_LEVEL_WIDTH,
 		P2_TILE_HEIGHT * P2_LEVEL_HEIGHT,
 		24, flags
 	);
-	bool quit = false;
 	SDL_SetEventFilter(event_filter);
 	// Did we actually get a hardware, double-buffered surface?
 	// If not, it probably isn't vsynced, and we should include
 	// a sleep in the main loop
 	bool delay = ((screen->flags & flags) != flags);
+
+	//
+	// XXX Prototype code XXX
+	//
 
 	// Accept passwords on the command line
 	size_t level = 0;
@@ -174,115 +178,39 @@ int main(int argc, char *argv[])
 			level = 0;
 	}
 
-	while (!quit && (level < l.size()))
+	// Create main game loop starting directly from chosen level
+	std::shared_ptr<GameLoop> g(new InGame(a, l, level));
+
+	bool quit = false;
+	Uint32 frametime = SDL_GetTicks();
+	Uint32 old_frametime = frametime;
+
+	while (!quit)
 	{
-		// Render level name into a surface
-		SDL_Surface * name = a.renderWord(l[level].name,
-			l[level].name_colour[0],
-			l[level].name_colour[1],
-			l[level].name_colour[2]);
-
-		// Create GameObjects array
-		// Keep track of them in a vector too, regardless of their
-		// position in the game world, so we can render them without
-		// iterating over the whole lot
-		GameObject *objects[P2_LEVEL_WIDTH * P2_LEVEL_HEIGHT];
-		std::vector<GameObject*> v_objects;
-		Player *p = NULL;
-		memset(objects, 0, sizeof(objects));
-		objects_left = 0;
-		for (uint8_t i = 0; i < l[level].num_sprites; ++i)
+		// Process events
+		SDL_Event e;
+		while (SDL_PollEvent(&e))
 		{
-			const SpriteInfo *s = &(l[level].spriteinfo[i]);
-			GameObject **o = &(objects[(s->y * P2_LEVEL_WIDTH) + s->x]);
-			switch (s->index)
-			{
-				case 0:
-					*o = new Player(&(l.getPlayerSprites()),
-						l[level].tilemap, s->x, s->y, objects,
-						l.firstFloorTile(), l.firstCrossTile());
-					p = (Player*) *o;
-					break;
-				case 1:
-					*o = new Box(&(l.getSprites()),
-						l[level].tilemap, s->x, s->y, objects,
-						l.firstFloorTile(), l.firstCrossTile());
-					break;
-				case 2:
-					*o = new Ball(&(l.getSprites()),
-						l[level].tilemap, s->x, s->y, objects,
-						l.firstFloorTile(), l.firstCrossTile());
-			}
-			v_objects.push_back(*o);
-			++objects_left;
+			// Only quit events are allowed on the queue
+			quit = true;
 		}
-		// One object is the player
-		--objects_left;
 
-		Uint32 frametime = SDL_GetTicks();
-		Uint32 old_frametime = frametime;
+		bool keep = g->update((float)(frametime - old_frametime) / 1000.0,
+			SDL_GetKeyState(NULL), screen);
 
-		while (!quit && objects_left > 0)
+		if (!keep)
 		{
-			// Process events
-			SDL_Event e;
-			while (SDL_PollEvent(&e))
-			{
-				// Only quit events are allowed on the queue
-				quit = true;
-			}
-
-			// Handle keypresses separately
-			// (we don't care about explicit presses/releases,
-			// just which keys are being held down)
-			Uint8 *keys = SDL_GetKeyState(NULL);
-			if (keys[SDLK_UP])
-				p->move(Up);
-			else if (keys[SDLK_DOWN])
-				p->move(Down);
-			else if (keys[SDLK_LEFT])
-				p->move(Left);
-			else if (keys[SDLK_RIGHT])
-				p->move(Right);
-			if (keys[SDLK_ESCAPE])
-				quit = true;
-
-			// Render background & game objects
-			const uint8_t *tilemap = l[level].tilemap;
-			for (int y = 0; y < P2_LEVEL_HEIGHT; ++y)
-			{
-				for (int x = 0; x < P2_LEVEL_WIDTH; ++x)
-				{
-					SDL_Rect rect = {
-						(Sint16)(x * P2_TILE_WIDTH),
-						(Sint16)(y * P2_TILE_HEIGHT),
-						0, 0
-					};
-					SDL_BlitSurface(t[tilemap[(y * P2_LEVEL_WIDTH) + x]],
-						NULL, screen, &rect);
-				}
-			}
-			for (std::vector<GameObject*>::const_iterator i = v_objects.begin();
-				i != v_objects.end(); ++i)
-			{
-				(*i)->render(screen, (float)(frametime - old_frametime) / 1000.0);
-			}
-
-			// Render level name
-			SDL_Rect rect = {
-				50, 320, 0, 0
-			};
-			SDL_BlitSurface(name, NULL, screen, &rect);
-
-			SDL_Flip(screen);
-			if (delay)
-				SDL_Delay(10);
-
-			old_frametime = frametime;
-			frametime = SDL_GetTicks();
+			g = g->nextLoop();
+			if (g.get() == 0)
+				break;
 		}
-		++level;
-		SDL_FreeSurface(name);
+
+		SDL_Flip(screen);
+		if (delay)
+			SDL_Delay(20);
+
+		old_frametime = frametime;
+		frametime = SDL_GetTicks();
 	}
 
 	return 0;
