@@ -16,6 +16,7 @@
 //    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef HXX_CONSTANTS
+#define HXX_CONSTANTS
 
 #define P2_MAX_SPRITES_PER_LEVEL 20
 #define P2_LEVEL_WIDTH 20

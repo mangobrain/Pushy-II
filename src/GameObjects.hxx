@@ -16,6 +16,7 @@
 //    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef HXX_GAMEOBJECTS
+#define HXX_GAMEOBJECTS
 
 class GameObject
 {
