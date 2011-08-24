@@ -254,8 +254,8 @@ int main(int argc, char *argv[])
 				for (int x = 0; x < P2_LEVEL_WIDTH; ++x)
 				{
 					SDL_Rect rect = {
-						x * P2_TILE_WIDTH,
-						y * P2_TILE_HEIGHT,
+						(Sint16)(x * P2_TILE_WIDTH),
+						(Sint16)(y * P2_TILE_HEIGHT),
 						0, 0
 					};
 					SDL_BlitSurface(t[tilemap[(y * P2_LEVEL_WIDTH) + x]],

@@ -348,7 +348,7 @@ void Ball::render(SDL_Surface *screen, float elapsed)
 	}
 
 	SDL_Rect rect = {
-		m_anim_x, m_anim_y,
+		(Sint16)m_anim_x, (Sint16)m_anim_y,
 		0, 0
 	};
 
@@ -374,7 +374,7 @@ void Box::render(SDL_Surface *screen, float elapsed)
 	}
 
 	SDL_Rect rect = {
-		m_anim_x, m_anim_y,
+		(Sint16)m_anim_x, (Sint16)m_anim_y,
 		0, 0
 	};
 
@@ -439,7 +439,7 @@ void Player::render(SDL_Surface *screen, float elapsed)
 	}
 
 	SDL_Rect rect = {
-		m_anim_x, m_anim_y,
+		(Sint16)m_anim_x, (Sint16)m_anim_y,
 		0, 0
 	};
 	SDL_Surface *sprite = (*m_sprites)[m_anim_index + m_anim_state + (m_straining ? 24 : 0)];

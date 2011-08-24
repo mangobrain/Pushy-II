@@ -90,9 +90,9 @@ class LevelSet
 		};
 
 	private:
-		std::auto_ptr<TileSet> m_tileset;
-		std::auto_ptr<TileSet> m_spriteset;
-		std::auto_ptr<TileSet> m_playerspriteset;
+		std::unique_ptr<TileSet> m_tileset;
+		std::unique_ptr<TileSet> m_spriteset;
+		std::unique_ptr<TileSet> m_playerspriteset;
 		std::vector<Level> m_levelset;
 		uint8_t m_titlescreen[P2_LEVEL_HEIGHT * P2_LEVEL_WIDTH];
 		uint8_t m_first_floor_tile;
