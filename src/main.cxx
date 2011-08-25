@@ -200,9 +200,13 @@ int main(int argc, char *argv[])
 
 		if (!keep)
 		{
-			g = g->nextLoop();
-			if (g.get() == 0)
+			std::unique_ptr<GameLoopFactory> f(g->nextLoop());
+			g.reset();
+
+			if (f.get() == 0)
 				break;
+			else
+				g = (*f)();
 		}
 
 		SDL_Flip(screen);

@@ -143,19 +143,26 @@ bool InGame::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 	}
 }
 
-std::shared_ptr<GameLoop> InGame::nextLoop()
+std::unique_ptr<GameLoopFactory> InGame::nextLoop()
 {
 	if (m_advance)
 	{
-		return std::shared_ptr<GameLoop>(
-			new InGame(m_alphabet, m_levelset, m_level + 1)
-		);
+		InGameFactory *f(new InGameFactory());
+		f->a = &m_alphabet;
+		f->l = &m_levelset;
+		f->level = m_level + 1;
+		return std::unique_ptr<GameLoopFactory>(f);
 	}
 	else
-		return std::shared_ptr<GameLoop>();
+		return std::unique_ptr<GameLoopFactory>();
 }
 
 InGame::~InGame()
 {
 	SDL_FreeSurface(m_name_surf);
+}
+
+std::shared_ptr<GameLoop> InGameFactory::operator() ()
+{
+	return std::shared_ptr<GameLoop>(new InGame(*a, *l, level));
 }

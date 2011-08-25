@@ -26,7 +26,7 @@ class InGame: public GameLoop
 		~InGame();
 
 		bool update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen);
-		std::shared_ptr<GameLoop> nextLoop();
+		std::unique_ptr<GameLoopFactory> nextLoop();
 
 	private:
 		int m_level;
@@ -50,6 +50,13 @@ class InGame: public GameLoop
 		Player* m_player;
 
 		SDL_Surface *m_name_surf;
+};
+
+struct InGameFactory: public GameLoopFactory
+{
+	int level;
+
+	std::shared_ptr<GameLoop> operator() ();
 };
 
 #endif

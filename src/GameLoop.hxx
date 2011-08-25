@@ -18,8 +18,19 @@
 #ifndef HXX_GAMELOOP
 #define HXX_GAMELOOP
 
+class GameLoop;
+
+// Base struct for GameLoop-derived class factories
+struct GameLoopFactory
+{
+	const Alphabet *a;
+	const LevelSet *l;
+
+	virtual std::shared_ptr<GameLoop> operator() () = 0;
+};
+
 // Base class for switchable main loop update function
-class GameLoop
+class GameLoop: public std::enable_shared_from_this<GameLoop>
 {
 	public:
 		GameLoop(const Alphabet &a, const LevelSet &l)
@@ -36,16 +47,12 @@ class GameLoop
 		virtual bool update(float elapsed, const Uint8 *kbdstate,
 			SDL_Surface *screen) = 0;
 
-		// Return a shared_ptr to the next game loop.
+		// Return a shared_ptr to the next game loop factory.
 		// This will be called after update() has returned false.
 		// If it returns a pointer to 0, quit the game.
-		//
-		// FIXME: This currently relies on constructing the next
-		// GameLoop before the current one has been deleted, which
-		// could lead to unnecessary RAM usage due to the overlap
-		// in resource allocation.  Perhaps return a factory
-		// functor from update()?
-		virtual std::shared_ptr<GameLoop> nextLoop() = 0;
+		// The current game loop will be destroyed *before*
+		// calling operator() on the factory for the next loop.
+		virtual std::unique_ptr<GameLoopFactory> nextLoop() = 0;
 
 	protected:
 		const Alphabet &m_alphabet;
