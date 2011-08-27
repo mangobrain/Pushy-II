@@ -31,6 +31,7 @@ class InGame: public GameLoop
 	private:
 		int m_level;
 		int m_score;
+		int m_objects_left;
 		bool m_advance;
 
 		// Array of pointers to game objects, one per square.

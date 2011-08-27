@@ -45,8 +45,6 @@
 // Implementation
 //
 
-extern int objects_left;
-
 InGame::InGame(const Alphabet &a, const LevelSet &l, int level)
 	: GameLoop(a, l), m_level(level), m_score(0), m_advance(false),
 	  m_player(NULL), m_name_surf(NULL), m_background_surf(NULL)
@@ -70,18 +68,18 @@ InGame::InGame(const Alphabet &a, const LevelSet &l, int level)
 			case 0:
 				*o = new Player(&(l.getPlayerSprites()),
 					l[level].tilemap, s->x, s->y, m_object_array,
-					l.firstFloorTile(), l.firstCrossTile());
+					l.firstFloorTile(), l.firstCrossTile(), m_objects_left);
 				m_player = (Player*) *o;
 				break;
 			case 1:
 				*o = new Box(&(l.getSprites()),
 					l[level].tilemap, s->x, s->y, m_object_array,
-					l.firstFloorTile(), l.firstCrossTile());
+					l.firstFloorTile(), l.firstCrossTile(), m_objects_left);
 				break;
 			case 2:
 				*o = new Ball(&(l.getSprites()),
 					l[level].tilemap, s->x, s->y, m_object_array,
-					l.firstFloorTile(), l.firstCrossTile());
+					l.firstFloorTile(), l.firstCrossTile(), m_objects_left);
 		}
 		m_objects.emplace_back(*o);
 	}
@@ -89,7 +87,7 @@ InGame::InGame(const Alphabet &a, const LevelSet &l, int level)
 	// Set the number of objects in the current level,
 	// for keeping track of when the level is completed.
 	// One object is the player.
-	objects_left = l[level].num_sprites - 1;
+	m_objects_left = l[level].num_sprites - 1;
 
 	// Create pre-rendered surface containing game background
 	const uint8_t *tilemap = m_levelset[m_level].tilemap;
@@ -138,7 +136,7 @@ bool InGame::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 	};
 	SDL_BlitSurface(m_name_surf, NULL, screen, &rect);
 
-	if (objects_left)
+	if (m_objects_left)
 		return true;
 	else
 	{

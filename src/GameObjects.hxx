@@ -23,7 +23,8 @@ class GameObject
 	public:
 		GameObject(const TileSet *sprites, const uint8_t *tilemap,
 			uint8_t x, uint8_t y, GameObject **objects,
-			uint8_t first_floor_tile, uint8_t first_cross_tile);
+			uint8_t first_floor_tile, uint8_t first_cross_tile,
+			int &objects_left);
 		virtual void render(SDL_Surface *screen, float elapsed) = 0;
 		virtual ~GameObject() {};
 
@@ -35,6 +36,7 @@ class GameObject
 		uint8_t m_x;
 		uint8_t m_y;
 		GameObject **m_objects;
+		int &m_objects_left;
 
 	private:
 		const uint8_t *m_tilemap;
@@ -78,7 +80,8 @@ class PushableObject: public GameObject, public AnimableObject
 	public:
 		PushableObject(const TileSet *sprites, const uint8_t *tilemap,
 			uint8_t x, uint8_t y, GameObject **objects,
-			uint8_t first_floor_tile, uint8_t first_cross_tile);
+			uint8_t first_floor_tile, uint8_t first_cross_tile,
+			int &objects_left);
 		bool canMove(Direction d) const;
 		virtual void push(Direction d) = 0;
 		virtual ~PushableObject() {};
@@ -91,7 +94,8 @@ class Ball: public PushableObject
 	public:
 		Ball(const TileSet *sprites, const uint8_t *tilemap,
 			uint8_t x, uint8_t y, GameObject **objects,
-			uint8_t first_floor_tile, uint8_t first_cross_tile);
+			uint8_t first_floor_tile, uint8_t first_cross_tile,
+			int &objects_left);
 		void push(Direction d);
 		void render(SDL_Surface *screen, float elapsed);
 	private:
@@ -104,7 +108,8 @@ class Box: public PushableObject
 	public:
 		Box(const TileSet *sprites, const uint8_t *tilemap,
 			uint8_t x, uint8_t y, GameObject **objects,
-			uint8_t first_floor_tile, uint8_t first_cross_tile);
+			uint8_t first_floor_tile, uint8_t first_cross_tile,
+			int &objects_left);
 		void push(Direction d);
 		void render(SDL_Surface *screen, float elapsed);
 };
@@ -114,7 +119,8 @@ class Player: public GameObject, AnimableObject
 	public:
 		Player(const TileSet *sprites, const uint8_t *tilemap,
 			uint8_t x, uint8_t y, GameObject **objects,
-			uint8_t first_floor_tile, uint8_t first_cross_tile);
+			uint8_t first_floor_tile, uint8_t first_cross_tile,
+			int &objects_left);
 		void render(SDL_Surface *screen, float elapsed);
 		void move(Direction d);
 	private:

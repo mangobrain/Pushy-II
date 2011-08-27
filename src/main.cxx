@@ -52,9 +52,6 @@
 // Implementation
 //
 
-// TODO Stop this being a global, it's nasty
-int objects_left = 0;
-
 int event_filter(const SDL_Event *event)
 {
 	if (event->type == SDL_QUIT)

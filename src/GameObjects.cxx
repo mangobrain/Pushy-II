@@ -46,14 +46,13 @@
 #define ROLL_SPEED 180.0f
 #define ROLL_ACCEL 80.0f
 
-extern int objects_left;
-
 GameObject::GameObject(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
-	uint8_t first_floor_tile, uint8_t first_cross_tile)
+	uint8_t first_floor_tile, uint8_t first_cross_tile, int &objects_left)
 	: m_sprites(sprites), m_x(x), m_y(y), m_objects(objects),
-	m_tilemap(tilemap), m_first_floor_tile(first_floor_tile),
-	m_first_cross_tile(first_cross_tile)
+	  m_objects_left(objects_left),
+	  m_tilemap(tilemap), m_first_floor_tile(first_floor_tile),
+	  m_first_cross_tile(first_cross_tile)
 {
 }
 
@@ -99,34 +98,42 @@ bool PushableObject::canMove(Direction d) const
 
 PushableObject::PushableObject(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
-	uint8_t first_floor_tile, uint8_t first_cross_tile)
-	:GameObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
-	AnimableObject(x, y), m_defused(false)
+	uint8_t first_floor_tile, uint8_t first_cross_tile,
+	int &objects_left)
+	: GameObject(sprites, tilemap, x, y, objects,
+		first_floor_tile, first_cross_tile, objects_left),
+	  AnimableObject(x, y), m_defused(false)
 {}
 
 AnimableObject::AnimableObject(uint8_t ax, uint8_t ay)
-	:m_anim_x(ax * P2_TILE_WIDTH), m_anim_y(ay * P2_TILE_HEIGHT),
-	m_anim_fps(15), m_anim_index(0), m_anim_state(0), m_anim_frames_elapsed(0.0f)
+	: m_anim_x(ax * P2_TILE_WIDTH), m_anim_y(ay * P2_TILE_HEIGHT),
+	  m_anim_fps(15), m_anim_index(0), m_anim_state(0), m_anim_frames_elapsed(0.0f)
 {}
 
 Ball::Ball(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
-	uint8_t first_floor_tile, uint8_t first_cross_tile)
-	:PushableObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
-	m_rolling(false), m_speed(PUSH_SPEED)
+	uint8_t first_floor_tile, uint8_t first_cross_tile,
+	int &objects_left)
+	: PushableObject(sprites, tilemap, x, y, objects,
+		first_floor_tile, first_cross_tile, objects_left),
+	  m_rolling(false), m_speed(PUSH_SPEED)
 {}
 
 Box::Box(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
-	uint8_t first_floor_tile, uint8_t first_cross_tile)
-	:PushableObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile)
+	uint8_t first_floor_tile, uint8_t first_cross_tile,
+	int &objects_left)
+	: PushableObject(sprites, tilemap, x, y, objects,
+		first_floor_tile, first_cross_tile, objects_left)
 {}
 
 Player::Player(const TileSet *sprites, const uint8_t *tilemap,
 	uint8_t x, uint8_t y, GameObject **objects,
-	uint8_t first_floor_tile, uint8_t first_cross_tile)
-	:GameObject(sprites, tilemap, x, y, objects, first_floor_tile, first_cross_tile),
-	AnimableObject(x, y), m_speed(PLAYER_SPEED), m_busy(false), m_straining(false)
+	uint8_t first_floor_tile, uint8_t first_cross_tile,
+	int &objects_left)
+	: GameObject(sprites, tilemap, x, y, objects,
+		first_floor_tile, first_cross_tile, objects_left),
+	  AnimableObject(x, y), m_speed(PLAYER_SPEED), m_busy(false), m_straining(false)
 {}
 
 int AnimableObject::advanceAnim(float elapsed)
@@ -296,13 +303,13 @@ void Ball::render(SDL_Surface *screen, float elapsed)
 	// Check (when arrived) whether destination is a cross, and defuse
 	if (!m_rolling && !m_defused && tileIsCross(m_x, m_y))
 	{
-		--objects_left;
+		--m_objects_left;
 		m_defused = true;
 	}
 	if (m_defused && !tileIsCross(m_x, m_y))
 	{
 		// We've been pushed off a cross, arrived or otherwise
-		++objects_left;
+		++m_objects_left;
 		m_defused = false;
 	}
 
@@ -362,14 +369,14 @@ void Box::render(SDL_Surface *screen, float elapsed)
 	if (!m_defused && tileIsCross(m_x, m_y) && arrived)
 	{
 		// We've arived on a cross
-		--objects_left;
+		--m_objects_left;
 		m_defused = true;
 	}
 
 	if (m_defused && !tileIsCross(m_x, m_y))
 	{
 		// We've been pushed off a cross, arrived or otherwise
-		++objects_left;
+		++m_objects_left;
 		m_defused = false;
 	}
 
