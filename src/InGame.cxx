@@ -49,7 +49,7 @@ extern int objects_left;
 
 InGame::InGame(const Alphabet &a, const LevelSet &l, int level)
 	: GameLoop(a, l), m_level(level), m_score(0), m_advance(false),
-	  m_player(NULL), m_name_surf(NULL)
+	  m_player(NULL), m_name_surf(NULL), m_background_surf(NULL)
 {
 	// Render level name into a surface
 	m_name_surf = a.renderWord(l[level].name,
@@ -90,6 +90,23 @@ InGame::InGame(const Alphabet &a, const LevelSet &l, int level)
 	// for keeping track of when the level is completed.
 	// One object is the player.
 	objects_left = l[level].num_sprites - 1;
+
+	// Create pre-rendered surface containing game background
+	const uint8_t *tilemap = m_levelset[m_level].tilemap;
+	m_background_surf = SDL_DisplayFormat(SDL_GetVideoSurface());
+	for (int y = 0; y < P2_LEVEL_HEIGHT; ++y)
+	{
+		for (int x = 0; x < P2_LEVEL_WIDTH; ++x)
+		{
+			SDL_Rect rect = {
+				(Sint16)(x * P2_TILE_WIDTH),
+				(Sint16)(y * P2_TILE_HEIGHT),
+				0, 0
+			};
+			SDL_BlitSurface(m_tileset[tilemap[(y * P2_LEVEL_WIDTH) + x]],
+				NULL, m_background_surf, &rect);
+		}
+	}
 }
 
 bool InGame::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
@@ -109,20 +126,7 @@ bool InGame::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 		return false;
 
 	// Render background & game objects
-	const uint8_t *tilemap = m_levelset[m_level].tilemap;
-	for (int y = 0; y < P2_LEVEL_HEIGHT; ++y)
-	{
-		for (int x = 0; x < P2_LEVEL_WIDTH; ++x)
-		{
-			SDL_Rect rect = {
-				(Sint16)(x * P2_TILE_WIDTH),
-				(Sint16)(y * P2_TILE_HEIGHT),
-				0, 0
-			};
-			SDL_BlitSurface(m_tileset[tilemap[(y * P2_LEVEL_WIDTH) + x]],
-				NULL, screen, &rect);
-		}
-	}
+	SDL_BlitSurface(m_background_surf, NULL, screen, NULL);
 	for (auto i = m_objects.cbegin(); i != m_objects.cend(); ++i)
 	{
 		(*i)->render(screen, elapsed);
@@ -160,6 +164,7 @@ std::unique_ptr<GameLoopFactory> InGame::nextLoop()
 InGame::~InGame()
 {
 	SDL_FreeSurface(m_name_surf);
+	SDL_FreeSurface(m_background_surf);
 }
 
 std::shared_ptr<GameLoop> InGameFactory::operator() ()
