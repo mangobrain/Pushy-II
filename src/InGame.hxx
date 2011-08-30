@@ -22,7 +22,8 @@
 class InGame: public GameLoop
 {
 	public:
-		InGame(const Alphabet &a, const LevelSet &l, int level = 0);
+		InGame(const Alphabet &a, const LevelSet &l, int level = 0,
+			int score = 0);
 		~InGame();
 
 		bool update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen);
@@ -32,6 +33,7 @@ class InGame: public GameLoop
 		int m_level;
 		int m_score;
 		int m_objects_left;
+		int m_bonus_counter;
 		bool m_advance;
 
 		// Array of pointers to game objects, one per square.
@@ -57,6 +59,7 @@ class InGame: public GameLoop
 struct InGameFactory: public GameLoopFactory
 {
 	int level;
+	int score;
 
 	std::shared_ptr<GameLoop> operator() ();
 };

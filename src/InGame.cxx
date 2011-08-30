@@ -45,8 +45,8 @@
 // Implementation
 //
 
-InGame::InGame(const Alphabet &a, const LevelSet &l, int level)
-	: GameLoop(a, l), m_level(level), m_score(0), m_advance(false),
+InGame::InGame(const Alphabet &a, const LevelSet &l, int level, int score)
+	: GameLoop(a, l), m_level(level), m_score(score), m_advance(false),
 	  m_player(NULL), m_name_surf(NULL), m_background_surf(NULL)
 {
 	// Render level name into a surface
@@ -153,6 +153,7 @@ std::unique_ptr<GameLoopFactory> InGame::nextLoop()
 		f->a = &m_alphabet;
 		f->l = &m_levelset;
 		f->level = m_level + 1;
+		f->score = m_score;
 		return std::unique_ptr<GameLoopFactory>(f);
 	}
 	else
@@ -167,5 +168,5 @@ InGame::~InGame()
 
 std::shared_ptr<GameLoop> InGameFactory::operator() ()
 {
-	return std::shared_ptr<GameLoop>(new InGame(*a, *l, level));
+	return std::shared_ptr<GameLoop>(new InGame(*a, *l, level, score));
 }
