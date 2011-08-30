@@ -26,6 +26,7 @@
 
 // Language
 #include <memory>
+#include <sstream>
 
 // System
 
@@ -47,13 +48,19 @@
 
 InGame::InGame(const Alphabet &a, const LevelSet &l, int level, int score)
 	: GameLoop(a, l), m_level(level), m_score(score), m_advance(false),
-	  m_player(NULL), m_name_surf(NULL), m_background_surf(NULL)
+	  m_player(NULL), m_name_surf(NULL), m_background_surf(NULL),
+	  m_score_surf(NULL)
 {
 	// Render level name into a surface
 	m_name_surf = a.renderWord(l[level].name,
 		l[level].name_colour[0],
 		l[level].name_colour[1],
 		l[level].name_colour[2]);
+
+	// Render current score into a surface
+	std::ostringstream score_str;
+	score_str << m_score;
+	m_score_surf = a.renderWord(score_str.str(), 215, 215, 215);
 
 	// Create the game objects for the current level,
 	// placing them in the array representing the squares.
@@ -130,11 +137,14 @@ bool InGame::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 		(*i)->render(screen, elapsed);
 	}
 
-	// Render level name
+	// Render level name & score
 	SDL_Rect rect = {
 		50, 320, 0, 0
 	};
 	SDL_BlitSurface(m_name_surf, NULL, screen, &rect);
+	rect.x = (screen->w - 50) - m_score_surf->w;
+	rect.y = 320; rect.w = 0; rect.h = 0;
+	SDL_BlitSurface(m_score_surf, NULL, screen, &rect);
 
 	if (m_objects_left)
 		return true;

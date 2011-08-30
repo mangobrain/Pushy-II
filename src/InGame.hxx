@@ -54,6 +54,7 @@ class InGame: public GameLoop
 
 		SDL_Surface *m_name_surf;
 		SDL_Surface *m_background_surf;
+		SDL_Surface *m_score_surf;
 };
 
 struct InGameFactory: public GameLoopFactory
