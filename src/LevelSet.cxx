@@ -111,8 +111,8 @@ LevelSet::LevelSet(const char *filename)
 		readString(setfile, strbuff, true);
 		l.name.assign(strbuff);
 
-		// 4 bytes bonus counter start value (BCD)
-		setfile.read((char*)(l.bonus), 4);
+		// 4 bytes bonus counter start value
+		l.bonus = readInt(setfile);
 
 		// 3 bytes (ignore 4th) of level name colour
 		setfile.read((char*)(l.name_colour), 3);

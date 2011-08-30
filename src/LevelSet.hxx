@@ -35,7 +35,7 @@ struct SpriteInfo
 struct Level
 {
 	std::string name;
-	uint8_t bonus[4];
+	uint32_t bonus;
 	unsigned char name_colour[3];
 	uint8_t num_sprites;
 	SpriteInfo spriteinfo[P2_MAX_SPRITES_PER_LEVEL];
