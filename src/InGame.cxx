@@ -27,6 +27,7 @@
 // Language
 #include <memory>
 #include <sstream>
+#include <cmath>
 
 // System
 
@@ -46,10 +47,12 @@
 // Implementation
 //
 
-InGame::InGame(const Alphabet &a, const LevelSet &l, int level, int score)
+#define BONUS_COUNTER_RATE 9.05f
+
+InGame::InGame(const Alphabet &a, const LevelSet &l, int level, uint32_t score)
 	: GameLoop(a, l), m_level(level), m_score(score), m_advance(false),
 	  m_player(NULL), m_name_surf(NULL), m_background_surf(NULL),
-	  m_score_surf(NULL)
+	  m_score_surf(NULL), m_int_bonus_counter(-1), m_bonus_surf(NULL)
 {
 	// Render level name into a surface
 	m_name_surf = a.renderWord(l[level].name,
@@ -61,6 +64,9 @@ InGame::InGame(const Alphabet &a, const LevelSet &l, int level, int score)
 	std::ostringstream score_str;
 	score_str << m_score;
 	m_score_surf = a.renderWord(score_str.str(), 215, 215, 215);
+
+	// Set initial value of bonus counter
+	m_bonus_counter = l[level].bonus;
 
 	// Create the game objects for the current level,
 	// placing them in the array representing the squares.
@@ -146,10 +152,34 @@ bool InGame::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 	rect.y = 320; rect.w = 0; rect.h = 0;
 	SDL_BlitSurface(m_score_surf, NULL, screen, &rect);
 
+	// Render current bonus counter value
+	// RGB values based on colours from a screenshot
+	if (m_int_bonus_counter)
+	{
+		m_bonus_counter -= BONUS_COUNTER_RATE * elapsed;
+		if (m_int_bonus_counter != (int) floorf(m_bonus_counter))
+		{
+			m_int_bonus_counter = (int) floorf(m_bonus_counter);
+
+			std::ostringstream bonus_str;
+			bonus_str << m_int_bonus_counter;
+
+			if (m_bonus_surf)
+				SDL_FreeSurface(m_bonus_surf);
+
+			m_bonus_surf = m_alphabet.renderWord(bonus_str.str(),
+				62, 253, 231);
+		}
+	}
+
+	rect.x = 448; rect.y = 4; rect.w = 0; rect.h = 0;
+	SDL_BlitSurface(m_bonus_surf, NULL, screen, &rect);
+
 	if (m_objects_left)
 		return true;
 	else
 	{
+		m_score += m_int_bonus_counter;
 		m_advance = true;
 		return false;
 	}
@@ -174,6 +204,8 @@ InGame::~InGame()
 {
 	SDL_FreeSurface(m_name_surf);
 	SDL_FreeSurface(m_background_surf);
+	SDL_FreeSurface(m_score_surf);
+	SDL_FreeSurface(m_bonus_surf);
 }
 
 std::shared_ptr<GameLoop> InGameFactory::operator() ()

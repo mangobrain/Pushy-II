@@ -23,7 +23,7 @@ class InGame: public GameLoop
 {
 	public:
 		InGame(const Alphabet &a, const LevelSet &l, int level = 0,
-			int score = 0);
+			uint32_t score = 0);
 		~InGame();
 
 		bool update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen);
@@ -31,9 +31,8 @@ class InGame: public GameLoop
 
 	private:
 		int m_level;
-		int m_score;
+		uint32_t m_score;
 		int m_objects_left;
-		int m_bonus_counter;
 		bool m_advance;
 
 		// Array of pointers to game objects, one per square.
@@ -55,6 +54,10 @@ class InGame: public GameLoop
 		SDL_Surface *m_name_surf;
 		SDL_Surface *m_background_surf;
 		SDL_Surface *m_score_surf;
+
+		float m_bonus_counter;
+		int m_int_bonus_counter;
+		SDL_Surface *m_bonus_surf;
 };
 
 struct InGameFactory: public GameLoopFactory
