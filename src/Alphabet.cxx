@@ -142,21 +142,30 @@ SDL_Surface * Alphabet::renderWord(const std::string &word,
 			indices[i] = (word[i] - '0') + 52;
 		else if (word[i] == ':')
 			indices[i] = 62;
+		else if (word[i] == ' ')
+			// Space - special case
+			indices[i] = -1;
 		else
 			// Render any other unrecognised character as a hyphen
 			indices[i] = 63;
 
-		// Store the tallest character to work out the height
-		// of surface we'll need to allocate (height + Y offset)
-		const Glyph & g(m_glyphs[indices[i]]);
-		if (g.height + g.y_offset > height)
-			height = g.height + g.y_offset;
+		if (indices[i] >= 0)
+		{
+			// Store the tallest character to work out the height
+			// of surface we'll need to allocate (height + Y offset)
+			const Glyph & g(m_glyphs[indices[i]]);
+			if (g.height + g.y_offset > height)
+				height = g.height + g.y_offset;
 
-		// Add up total width of glyphs in string to get
-		// final width of surface.  For glyphs except the
-		// last, use the X offset (kerning) instead of
-		// the width of the glyph itself.
-		width += (i < (word.length() - 1)) ? g.x_offset : g.width;
+			// Add up total width of glyphs in string to get
+			// final width of surface.  For glyphs except the
+			// last, use the X offset (kerning) instead of
+			// the width of the glyph itself.
+			width += (i < (word.length() - 1)) ? g.x_offset : g.width;
+		}
+		else
+			// Space character
+			width += 24;
 	}
 
 	// Create destination surface
@@ -170,6 +179,13 @@ SDL_Surface * Alphabet::renderWord(const std::string &word,
 	int glyph_horz_start = 0;
 	for (size_t i = 0; i < word.length(); ++i)
 	{
+		// Handle space characters first
+		if (indices[i] < 0)
+		{
+			glyph_horz_start += 24;
+			continue;
+		}
+
 		const Glyph & g(m_glyphs[indices[i]]);
 		for (int y = 0; y < g.height; ++y)
 		{
