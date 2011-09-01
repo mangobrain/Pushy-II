@@ -1,4 +1,4 @@
-// Copyright 2010 Philip Allison
+// Copyright 2010-2011 Philip Allison
 
 //    This file is part of Pushy 2.
 //
@@ -45,7 +45,7 @@
 #include "GameObjects.hxx"
 #include "Alphabet.hxx"
 #include "GameLoop.hxx"
-#include "InGame.hxx"
+#include "MainMenu.hxx"
 
 
 //
@@ -156,27 +156,8 @@ int main(int argc, char *argv[])
 	// a sleep in the main loop
 	bool delay = ((screen->flags & flags) != flags);
 
-	//
-	// XXX Prototype code XXX
-	//
-
-	// Accept passwords on the command line
-	size_t level = 0;
-	if (optind < argc)
-	{
-		std::string password = argv[optind];
-		for (size_t i = 0; i < l.size(); ++i)
-		{
-			if (l[level].name == password)
-				break;
-			++level;
-		}
-		if (level == l.size())
-			level = 0;
-	}
-
-	// Create main game loop starting directly from chosen level
-	std::shared_ptr<GameLoop> g(new InGame(a, l, level));
+	// Create main menu loop
+	std::shared_ptr<GameLoop> g(new MainMenu(a, l));
 
 	bool quit = false;
 	Uint32 frametime = SDL_GetTicks();
