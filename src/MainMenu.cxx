@@ -48,122 +48,41 @@
 // Implementation
 //
 
-
 MainMenu::MainMenu(const Alphabet &a, const LevelSet &l)
-	: GameLoop(a, l), m_selected_item(0),
-	  m_menu_items{NULL, NULL, NULL, NULL}, m_background_surf(NULL),
-	  m_old_kbdstate(NULL), m_next_loop(0)
+	: Menu(a, l)
 {
-	// Render main menu background
-	const uint8_t *tilemap = m_levelset.getTitleScreen();
-	m_background_surf = SDL_DisplayFormat(SDL_GetVideoSurface());
-	for (int y = 0; y < P2_LEVEL_HEIGHT; ++y)
-	{
-		for (int x = 0; x < P2_LEVEL_WIDTH; ++x)
-		{
-			SDL_Rect rect = {
-				(Sint16)(x * P2_TILE_WIDTH),
-				(Sint16)(y * P2_TILE_HEIGHT),
-				0, 0
-			};
-			SDL_BlitSurface(m_tileset[tilemap[(y * P2_LEVEL_WIDTH) + x]],
-				NULL, m_background_surf, &rect);
-		}
-	}
-
-	// Render main menu items
-	m_menu_items[0] = a.renderWord("Start Game", 255, 255, 0);
-	m_menu_items[1] = a.renderWord("Password", 0, 255, 0);
-	m_menu_items[2] = a.renderWord("Credits", 255, 127, 0);
-	m_menu_items[3] = a.renderWord("Quit Game", 255, 0, 0);
-
-	SDL_GetKeyState(&m_kbdstate_size);
-	m_old_kbdstate = new Uint8[m_kbdstate_size];
-	memset(m_old_kbdstate, 0, m_kbdstate_size);
+	// Set main menu items
+	setMenuItems(4,
+		"Start Game", 255, 255, 0,
+		"Password", 0, 255, 0,
+		"Credits", 255, 127, 0,
+		"Quit Game", 255, 0, 0);
 }
 
-MainMenu::~MainMenu()
+GameLoopFactory * MainMenu::loopForItem(int item)
 {
-	SDL_FreeSurface(m_background_surf);
-	SDL_FreeSurface(m_menu_items[0]);
-	SDL_FreeSurface(m_menu_items[1]);
-	SDL_FreeSurface(m_menu_items[2]);
-	SDL_FreeSurface(m_menu_items[3]);
-	delete[] m_old_kbdstate;
-}
+	GameLoopFactory *r = 0;
 
-bool MainMenu::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
-{
-	SDL_BlitSurface(m_background_surf, NULL, screen, NULL);
-
-	// Main menu visible.  Render menu items.
-	for (int i = 0; i < 4; ++i)
+	switch (item)
 	{
-		if (i == m_selected_item)
-			SDL_SetAlpha(m_menu_items[i], SDL_SRCALPHA, 255);
-		else
-			SDL_SetAlpha(m_menu_items[i], SDL_SRCALPHA, 127);
-
-		SDL_Rect rect = {
-			(Sint16)(320 - (m_menu_items[i]->w / 2)),
-			(Sint16)(100 + (48 * i)),
-			0, 0
-		};
-
-		SDL_BlitSurface(m_menu_items[i], NULL, screen, &rect);
+		case 0:
+			// New game
+			r = new InGameFactory();
+			r->a = &m_alphabet;
+			r->l = &m_levelset;
+			((InGameFactory*)r)->score = 0;
+			((InGameFactory*)r)->level = 0;
+			break;
+		case 1:
+			// TODO Password
+			break;
+		case 2:
+			// TODO Credits
+			break;
+		default:
+			// End game
+			break;
 	}
 
-	// Handle menu navigation
-	if (kbdstate[SDLK_UP] && !m_old_kbdstate[SDLK_UP])
-	{
-		if (--m_selected_item < 0)
-			m_selected_item = 3;
-	}
-	else if (kbdstate[SDLK_DOWN] && !m_old_kbdstate[SDLK_DOWN])
-	{
-		if (++m_selected_item == 4)
-			m_selected_item = 0;
-	}
-	else if (kbdstate[SDLK_RETURN] || kbdstate[SDLK_KP_ENTER]
-			 || kbdstate[SDLK_SPACE])
-	{
-		switch (m_selected_item)
-		{
-			case 0:
-				// Start game
-				m_next_loop = new InGameFactory();
-				((InGameFactory*)m_next_loop)->level = 0;
-				((InGameFactory*)m_next_loop)->score = 0;
-				break;
-			case 1:
-				// Password
-				// TODO
-				return true;
-			case 2:
-				// Credits
-				// TODO
-				return true;
-			case 3:
-				// Quit game
-				break;
-		}
-		if (m_next_loop)
-		{
-			m_next_loop->a = &m_alphabet;
-			m_next_loop->l = &m_levelset;
-		}
-		return false;
-	}
-	else if (kbdstate[SDLK_ESCAPE])
-		// Quit game
-		return false;
-
-	memcpy(m_old_kbdstate, kbdstate, m_kbdstate_size);
-
-	return true;
-}
-
-std::unique_ptr<GameLoopFactory> MainMenu::nextLoop()
-{
-	return std::unique_ptr<GameLoopFactory>(m_next_loop);
+	return r;
 }

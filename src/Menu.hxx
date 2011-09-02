@@ -15,19 +15,38 @@
 //    You should have received a copy of the GNU General Public License
 //    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef HXX_MAINMENU
-#define HXX_MAINMENU
+#ifndef HXX_MENU
+#define HXX_MENU
 
-#include "Menu.hxx"
+#include <vector>
 
-// GameLoop derivative for displaying the main menu
-class MainMenu: public Menu
+// GameLoop derivative for displaying menus
+class Menu: public GameLoop
 {
 	public:
-		MainMenu(const Alphabet &a, const LevelSet &l);
+		Menu(const Alphabet &a, const LevelSet &l);
+		~Menu();
+
+		bool update(float elapsed, const Uint8 *kbdstate,
+			SDL_Surface *screen);
+
+		std::unique_ptr<GameLoopFactory> nextLoop();
+
+	protected:
+		virtual GameLoopFactory * loopForItem(int item) = 0;
+
+		void setMenuItems(int count, ...);
 
 	private:
-		GameLoopFactory * loopForItem(int item);
+		int m_selected_item;
+		std::vector<SDL_Surface*> m_menu_items;
+
+		SDL_Surface *m_background_surf;
+
+		int m_kbdstate_size;
+		Uint8 *m_old_kbdstate;
+
+		GameLoopFactory *m_next_loop;
 };
 
 #endif

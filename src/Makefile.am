@@ -19,7 +19,8 @@ bin_PROGRAMS = pushy2
 
 pushy2_SOURCES = main.cxx TileSet.hxx TileSet.cxx LevelSet.hxx LevelSet.cxx \
 	GameObjects.hxx GameObjects.cxx Constants.hxx Alphabet.hxx Alphabet.cxx \
-	GameLoop.hxx InGame.hxx InGame.cxx MainMenu.hxx MainMenu.cxx
+	GameLoop.hxx InGame.hxx InGame.cxx MainMenu.hxx MainMenu.cxx \
+	Menu.hxx Menu.cxx
 pushy2_CXXFLAGS = $(SDL_CFLAGS) $(AM_CXXFLAGS)
 pushy2_CPPFLAGS = -DP2_PKGDATADIR='"$(pkgdatadir)"' $(AM_CPPFLAGS)
 pushy2_LDFLAGS = $(SDL_LIBS) $(AM_LDFLAGS)
