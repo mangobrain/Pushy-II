@@ -129,8 +129,8 @@ bool InGame::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 	else if (kbdstate[SDLK_RIGHT])
 		m_player->move(Right);
 
-	// Pause when escape is pressed
-	if (kbdstate[SDLK_ESCAPE])
+	// Pause when escape is pressed or app loses focus
+	if (kbdstate[SDLK_ESCAPE] || !(SDL_GetAppState() & SDL_APPINPUTFOCUS))
 		return false;
 
 	// Render background & game objects
