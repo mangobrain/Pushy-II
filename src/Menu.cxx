@@ -69,9 +69,9 @@ Menu::Menu(const Alphabet &a, const LevelSet &l)
 		}
 	}
 
-	SDL_GetKeyState(&m_kbdstate_size);
+	const Uint8 *kbdstate = SDL_GetKeyState(&m_kbdstate_size);
 	m_old_kbdstate = new Uint8[m_kbdstate_size];
-	memset(m_old_kbdstate, 0, m_kbdstate_size);
+	memcpy(m_old_kbdstate, kbdstate, m_kbdstate_size);
 }
 
 Menu::~Menu()
@@ -133,8 +133,9 @@ bool Menu::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 		if (++m_selected_item == (int)m_menu_items.size())
 			m_selected_item = 0;
 	}
-	else if (kbdstate[SDLK_RETURN] || kbdstate[SDLK_KP_ENTER]
-			 || kbdstate[SDLK_SPACE])
+	else if (
+		(kbdstate[SDLK_RETURN] || kbdstate[SDLK_KP_ENTER] || kbdstate[SDLK_SPACE])
+		&& !(m_old_kbdstate[SDLK_RETURN] || m_old_kbdstate[SDLK_KP_ENTER] || m_old_kbdstate[SDLK_SPACE]))
 	{
 		m_next_loop = loopForItem(m_selected_item);
 		if (m_next_loop)
