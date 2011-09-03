@@ -34,6 +34,8 @@
 // Local
 #include "MainMenu.hxx"
 #include "InGame.hxx"
+#include "PasswordEntry.hxx"
+#include "Credits.hxx"
 
 
 //
@@ -60,22 +62,25 @@ GameLoopFactory * MainMenu::loopForItem(int item)
 		case 0:
 			// New game
 			r = new InGameFactory();
-			r->a = &m_alphabet;
-			r->l = &m_levelset;
 			((InGameFactory*)r)->score = 0;
 			((InGameFactory*)r)->level = 0;
 			break;
 		case 1:
-			// TODO Password
+			r = new PasswordEntryFactory();
 			break;
 		case 2:
-			// TODO Credits
+			r = new CreditsFactory();
 			break;
 		default:
 			// End game
 			break;
 	}
 
+	if (r)
+	{
+		r->a = &m_alphabet;
+		r->l = &m_levelset;
+	}
 	return r;
 }
 
