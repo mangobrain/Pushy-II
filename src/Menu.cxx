@@ -42,7 +42,7 @@
 
 Menu::Menu(const Alphabet &a, const LevelSet &l)
 	: GameLoop(a, l), m_selected_item(0),
-	  m_background_surf(NULL),
+	  m_y_offset(0), m_background_surf(NULL),
 	  m_old_kbdstate(NULL), m_next_loop(0)
 {
 	// Render main menu background
@@ -62,6 +62,17 @@ Menu::Menu(const Alphabet &a, const LevelSet &l)
 		}
 	}
 
+	// Render title at the top
+	SDL_Surface *title = a.renderWord("Pushy II", 192, 192, 192);
+	SDL_Rect rect = {
+		(Sint16)(320 - (title->w / 2)),
+		40, 0, 0
+	};
+	SDL_BlitSurface(title, NULL, m_background_surf, &rect);
+
+	// Store current keyboard state, and size of keyboard state array.
+	// This is so that later we can process keypresses separate from
+	// keys which were already held down when entering the menu.
 	const Uint8 *kbdstate = SDL_GetKeyState(&m_kbdstate_size);
 	m_old_kbdstate = new Uint8[m_kbdstate_size];
 	memcpy(m_old_kbdstate, kbdstate, m_kbdstate_size);
@@ -78,9 +89,11 @@ Menu::~Menu()
 void Menu::setMenuItems(int count, ...)
 {
 	va_list ap;
-	va_start(ap, count);
 
+	// Render text of menu items onto surfaces
 	m_menu_items.reserve(count);
+	int h = 0;
+	va_start(ap, count);
 	for (int i = 0; i < count; ++i)
 	{
 		const char * word = va_arg(ap, const char*);
@@ -89,9 +102,16 @@ void Menu::setMenuItems(int count, ...)
 		int b = va_arg(ap, int);
 
 		m_menu_items.push_back(m_alphabet.renderWord(word, r, g, b));
-	}
 
+		// Calculate total height of menu - used later for vertical centreing
+		h += m_menu_items.back()->h;
+	}
 	va_end(ap);
+
+	// Calculate Y offset for menu rendering
+	// Window height is 384 pixels, half of which is 192,
+	// plus a small offset to account for the title at the top
+	m_y_offset = 205 - (h / 2);
 }
 
 bool Menu::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
@@ -99,6 +119,7 @@ bool Menu::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 	SDL_BlitSurface(m_background_surf, NULL, screen, NULL);
 
 	// Main menu visible.  Render menu items.
+	Sint16 yoff = m_y_offset;
 	for (size_t i = 0; i < m_menu_items.size(); ++i)
 	{
 		if (i == (size_t)m_selected_item)
@@ -108,11 +129,11 @@ bool Menu::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 
 		SDL_Rect rect = {
 			(Sint16)(320 - (m_menu_items[i]->w / 2)),
-			(Sint16)(100 + (48 * i)),
-			0, 0
+			yoff, 0, 0
 		};
 
 		SDL_BlitSurface(m_menu_items[i], NULL, screen, &rect);
+		yoff += m_menu_items[i]->h;
 	}
 
 	// Handle menu navigation

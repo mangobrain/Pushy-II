@@ -40,6 +40,7 @@ class Menu: public GameLoop
 	private:
 		int m_selected_item;
 		std::vector<SDL_Surface*> m_menu_items;
+		Sint16 m_y_offset;
 
 		SDL_Surface *m_background_surf;
 
