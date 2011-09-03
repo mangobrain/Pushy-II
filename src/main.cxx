@@ -29,22 +29,14 @@
 #include <cerrno>
 #include <cstring>
 #include <cstdlib>
-#include <memory>
 
 // System
 #include <unistd.h>
 
 // Library
-#include <SDL.h>
 #include <getopt.h>
 
 // Local
-#include "Constants.hxx"
-#include "TileSet.hxx"
-#include "LevelSet.hxx"
-#include "GameObjects.hxx"
-#include "Alphabet.hxx"
-#include "GameLoop.hxx"
 #include "MainMenu.hxx"
 
 

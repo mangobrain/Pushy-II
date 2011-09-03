@@ -18,6 +18,9 @@
 #ifndef HXX_GAMELOOP
 #define HXX_GAMELOOP
 
+#include "Alphabet.hxx"
+#include "LevelSet.hxx"
+
 class GameLoop;
 
 // Base struct for GameLoop-derived class factories

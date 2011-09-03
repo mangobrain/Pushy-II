@@ -18,6 +18,9 @@
 #ifndef HXX_INGAME
 #define HXX_INGAME
 
+#include "GameLoop.hxx"
+#include "GameObjects.hxx"
+
 // GameLoop-derived class for main in-level gameplay
 class InGame: public GameLoop
 {

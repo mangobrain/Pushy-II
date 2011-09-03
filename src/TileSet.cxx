@@ -27,14 +27,11 @@
 // Language
 #include <fstream>
 #include <stdexcept>
-#include <string>
 #include <new>
-#include <memory>
 
 // System
 
 // Library
-#include <SDL.h>
 
 // Local
 #include "TileSet.hxx"

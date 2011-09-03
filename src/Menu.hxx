@@ -18,7 +18,7 @@
 #ifndef HXX_MENU
 #define HXX_MENU
 
-#include <vector>
+#include "GameLoop.hxx"
 
 // GameLoop derivative for displaying menus
 class Menu: public GameLoop

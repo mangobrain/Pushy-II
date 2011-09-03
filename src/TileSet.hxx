@@ -20,6 +20,8 @@
 
 #include <vector>
 
+#include <SDL.h>
+
 // A collection of equal-sized, 24 bpp SDL surfaces loaded from a
 // file containing concatenated raw bitmap data
 class TileSet

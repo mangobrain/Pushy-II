@@ -28,12 +28,10 @@
 #include <fstream>
 #include <stdexcept>
 #include <new>
-#include <memory>
 
 // System
 
 // Library
-#include <SDL.h>
 
 // Local
 #include "Alphabet.hxx"

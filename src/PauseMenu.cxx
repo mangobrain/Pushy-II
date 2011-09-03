@@ -25,22 +25,14 @@
 #endif
 
 // Language
-#include <memory>
 #include <cstring>
 
 // System
 
 // Library
-#include <SDL.h>
 
 // Local
-#include "Constants.hxx"
-#include "Alphabet.hxx"
-#include "TileSet.hxx"
-#include "LevelSet.hxx"
-#include "GameLoop.hxx"
 #include "PauseMenu.hxx"
-#include "GameObjects.hxx"
 #include "InGame.hxx"
 #include "MainMenu.hxx"
 

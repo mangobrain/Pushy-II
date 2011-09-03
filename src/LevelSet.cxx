@@ -27,17 +27,13 @@
 // Language
 #include <fstream>
 #include <stdexcept>
-#include <string>
 #include <cstring>
 
 // System
 
 // Library
-#include <SDL.h>
 
 // Local
-#include "Constants.hxx"
-#include "TileSet.hxx"
 #include "LevelSet.hxx"
 
 //

@@ -18,6 +18,10 @@
 #ifndef HXX_GAMEOBJECTS
 #define HXX_GAMEOBJECTS
 
+#include <cstdint>
+
+#include "TileSet.hxx"
+
 class GameObject
 {
 	public:

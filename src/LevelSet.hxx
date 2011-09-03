@@ -18,10 +18,12 @@
 #ifndef HXX_LEVELSET
 #define HXX_LEVELSET
 
-#include <vector>
 #include <memory>
 #include <string>
-#include <cstddef>
+#include <cstdint>
+
+#include "TileSet.hxx"
+#include "Constants.hxx"
 
 // Structure representing one sprite in a level
 struct SpriteInfo

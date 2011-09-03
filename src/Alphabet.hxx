@@ -18,7 +18,11 @@
 #ifndef HXX_ALPHABET
 #define HXX_ALPHABET
 
+#include <cstdint>
 #include <vector>
+#include <string>
+
+#include <SDL.h>
 
 // Class for rendering coloured strings
 // composed of glyphs loaded from the Alphabet file.
