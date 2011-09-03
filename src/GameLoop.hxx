@@ -30,6 +30,7 @@ struct GameLoopFactory
 	const LevelSet *l;
 
 	virtual std::shared_ptr<GameLoop> operator() () = 0;
+	virtual ~GameLoopFactory() {};
 };
 
 // Base class for switchable main loop update function
