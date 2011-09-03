@@ -76,11 +76,9 @@ Menu::Menu(const Alphabet &a, const LevelSet &l)
 
 Menu::~Menu()
 {
+	for (auto i = m_menu_items.begin(); i != m_menu_items.end(); ++i)
+		SDL_FreeSurface(*i);
 	SDL_FreeSurface(m_background_surf);
-	SDL_FreeSurface(m_menu_items[0]);
-	SDL_FreeSurface(m_menu_items[1]);
-	SDL_FreeSurface(m_menu_items[2]);
-	SDL_FreeSurface(m_menu_items[3]);
 	delete[] m_old_kbdstate;
 }
 
