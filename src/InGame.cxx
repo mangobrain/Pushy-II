@@ -35,6 +35,8 @@
 // Local
 #include "InGame.hxx"
 #include "PauseMenu.hxx"
+#include "Score.hxx"
+
 
 //
 // Implementation
@@ -175,6 +177,8 @@ bool InGame::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 	else
 	{
 		m_score += m_int_bonus_counter;
+		if (m_score > Score::high)
+			Score::high = m_score;
 		m_advance = true;
 		return false;
 	}

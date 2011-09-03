@@ -26,6 +26,7 @@
 
 // Language
 #include <cstring>
+#include <sstream>
 
 // System
 
@@ -36,6 +37,7 @@
 #include "InGame.hxx"
 #include "PasswordEntry.hxx"
 #include "Credits.hxx"
+#include "Score.hxx"
 
 
 //
@@ -51,6 +53,11 @@ MainMenu::MainMenu(const Alphabet &a, const LevelSet &l)
 		"Password", 0, 255, 0,
 		"Credits", 255, 127, 0,
 		"Quit Game", 255, 0, 0);
+
+	// Render the high score into a surface
+	std::ostringstream hs;
+	hs << "High: " << Score::high;
+	m_hiscore_surf = a.renderWord(hs.str(), 192, 192, 192);
 }
 
 GameLoopFactory * MainMenu::loopForItem(int item)
@@ -82,6 +89,27 @@ GameLoopFactory * MainMenu::loopForItem(int item)
 		r->l = &m_levelset;
 	}
 	return r;
+}
+		
+bool MainMenu::update(float elapsed, const Uint8 *kbdstate,
+	SDL_Surface *screen)
+{
+	bool result = Menu::update(elapsed, kbdstate, screen);
+
+	// Render the high score on top of everything
+	// already put there by our base class
+	SDL_Rect rect = {
+		(Sint16)(320 - (m_hiscore_surf->w / 2)),
+		320, 0, 0
+	};
+	SDL_BlitSurface(m_hiscore_surf, NULL, screen, &rect);
+
+	return result;
+}
+
+MainMenu::~MainMenu()
+{
+	SDL_FreeSurface(m_hiscore_surf);
 }
 
 std::shared_ptr<GameLoop> MainMenuFactory::operator() ()
