@@ -86,3 +86,8 @@ GameLoopFactory * MainMenu::loopForItem(int item)
 
 	return r;
 }
+
+std::shared_ptr<GameLoop> MainMenuFactory::operator() ()
+{
+	return std::shared_ptr<GameLoop>(new MainMenu(*a, *l));
+}

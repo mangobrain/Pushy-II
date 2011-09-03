@@ -42,6 +42,7 @@
 #include "GameLoop.hxx"
 #include "GameObjects.hxx"
 #include "InGame.hxx"
+#include "PauseMenu.hxx"
 
 //
 // Implementation
@@ -133,6 +134,8 @@ bool InGame::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 		m_player->move(Left);
 	else if (kbdstate[SDLK_RIGHT])
 		m_player->move(Right);
+
+	// Pause when escape is pressed
 	if (kbdstate[SDLK_ESCAPE])
 		return false;
 
@@ -187,6 +190,10 @@ bool InGame::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen)
 
 std::unique_ptr<GameLoopFactory> InGame::nextLoop()
 {
+	// If we get here, update() must have returned false.
+	// It will do this either because the player should
+	// advance to the next level, or because the game has
+	// been paused.
 	if (m_advance)
 	{
 		InGameFactory *f(new InGameFactory());
@@ -197,7 +204,13 @@ std::unique_ptr<GameLoopFactory> InGame::nextLoop()
 		return std::unique_ptr<GameLoopFactory>(f);
 	}
 	else
-		return std::unique_ptr<GameLoopFactory>();
+	{
+		PauseFactory *f(new PauseFactory());
+		f->a = &m_alphabet;
+		f->l = &m_levelset;
+		f->paused_loop = shared_from_this();
+		return std::unique_ptr<GameLoopFactory>(f);
+	}
 }
 
 InGame::~InGame()

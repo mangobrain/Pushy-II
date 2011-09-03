@@ -15,23 +15,31 @@
 //    You should have received a copy of the GNU General Public License
 //    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef HXX_MAINMENU
-#define HXX_MAINMENU
+#ifndef HXX_PAUSEMENU
+#define HXX_PAUSEMENU
 
 #include "Menu.hxx"
 
-// GameLoop derivative for displaying the main menu
-class MainMenu: public Menu
+// GameLoop derivative for displaying the pause menu
+class PauseMenu: public Menu
 {
 	public:
-		MainMenu(const Alphabet &a, const LevelSet &l);
-
+		PauseMenu(const Alphabet &a, const LevelSet &l,
+			std::shared_ptr<GameLoop> paused_loop);
+		
 	private:
 		GameLoopFactory * loopForItem(int item);
+
+		std::shared_ptr<GameLoop> m_paused_loop;
+		bool m_unpause;
 };
 
-struct MainMenuFactory: public GameLoopFactory
+// Factory class for PauseMenu
+// Set paused_loop to point to the InGame being paused
+struct PauseFactory: public GameLoopFactory
 {
+	std::shared_ptr<GameLoop> paused_loop;
+
 	std::shared_ptr<GameLoop> operator() ();
 };
 

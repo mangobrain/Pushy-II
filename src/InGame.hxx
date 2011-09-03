@@ -29,6 +29,16 @@ class InGame: public GameLoop
 		bool update(float elapsed, const Uint8 *kbdstate, SDL_Surface *screen);
 		std::unique_ptr<GameLoopFactory> nextLoop();
 
+		int getLevel() const
+		{
+			return m_level;
+		};
+
+		uint32_t getScore() const
+		{
+			return m_score;
+		};
+
 	private:
 		int m_level;
 		uint32_t m_score;
