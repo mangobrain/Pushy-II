@@ -137,12 +137,15 @@ int main(int argc, char *argv[])
 	LevelSet l("LegoLev");
 
 	Uint32 flags = SDL_HWSURFACE | SDL_DOUBLEBUF;
+	SDL_WM_SetCaption("Pushy II", "Pushy II");
+	SDL_ShowCursor(SDL_DISABLE);
+	SDL_SetEventFilter(event_filter);
 	SDL_Surface *screen = SDL_SetVideoMode(
 		P2_TILE_WIDTH * P2_LEVEL_WIDTH,
 		P2_TILE_HEIGHT * P2_LEVEL_HEIGHT,
 		24, flags
 	);
-	SDL_SetEventFilter(event_filter);
+
 	// Did we actually get a hardware, double-buffered surface?
 	// If not, it probably isn't vsynced, and we should include
 	// a sleep in the main loop
