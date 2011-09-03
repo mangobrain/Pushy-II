@@ -93,16 +93,22 @@ bool PasswordEntry::update(float elapsed, const Uint8 *kbdstate, SDL_Surface *sc
 
 	// Loop over letter keys and see if any have been pressed.
 	// Modify the current password string accordingly.
-	for (int i = SDLK_a; i <= SDLK_z; ++i)
+	// Impose a width limit to prevent overrunning the edges
+	// of the screen - allow the longest password in the base
+	// Pushy II level set, though!
+	if (m_password.length() < 9)
 	{
-		if (kbdstate[i] && !m_old_kbdstate[i])
+		for (int i = SDLK_a; i <= SDLK_z; ++i)
 		{
-			char c = (i - SDLK_a) + 97;
-			if (m_password.empty())
-				c -= 32;
-			m_password.append(1, c);
-			password_changed = true;
-			break;
+			if (kbdstate[i] && !m_old_kbdstate[i])
+			{
+				char c = (i - SDLK_a) + 97;
+				if (m_password.empty())
+					c -= 32;
+				m_password.append(1, c);
+				password_changed = true;
+				break;
+			}
 		}
 	}
 
