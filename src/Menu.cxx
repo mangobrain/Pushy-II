@@ -69,6 +69,7 @@ Menu::Menu(const Alphabet &a, const LevelSet &l)
 		40, 0, 0
 	};
 	SDL_BlitSurface(title, NULL, m_background_surf, &rect);
+	SDL_FreeSurface(title);
 
 	// Store current keyboard state, and size of keyboard state array.
 	// This is so that later we can process keypresses separate from
