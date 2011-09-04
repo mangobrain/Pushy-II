@@ -19,7 +19,7 @@ bin_PROGRAMS = pushy2
 
 pushy2_SOURCES = main.cxx TileSet.hxx TileSet.cxx LevelSet.hxx LevelSet.cxx \
 	GameObjects.hxx GameObjects.cxx Constants.hxx Alphabet.hxx Alphabet.cxx \
-	GameLoop.hxx InGame.hxx InGame.cxx MainMenu.hxx MainMenu.cxx \
+	GameLoop.hxx GameLoop.cxx InGame.hxx InGame.cxx MainMenu.hxx MainMenu.cxx \
 	Menu.hxx Menu.cxx PauseMenu.hxx PauseMenu.cxx \
 	PasswordEntry.hxx PasswordEntry.cxx Credits.hxx Credits.cxx \
 	Score.hxx Score.cxx

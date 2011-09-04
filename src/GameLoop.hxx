@@ -37,11 +37,9 @@ struct GameLoopFactory
 class GameLoop: public std::enable_shared_from_this<GameLoop>
 {
 	public:
-		GameLoop(const Alphabet &a, const LevelSet &l)
-			: m_alphabet(a), m_levelset(l), m_tileset(l.getTiles())
-		{};
+		GameLoop(const Alphabet &a, const LevelSet &l);
 
-		virtual ~GameLoop() {};
+		virtual ~GameLoop();
 
 		// Update game state and render current frame.
 		// Return false to indicate that a new loop
