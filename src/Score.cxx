@@ -31,6 +31,7 @@
 // Library
 
 // Local
+#include "Score.hxx"
 
 
 //
@@ -39,5 +40,5 @@
 
 namespace Score
 {
-	int high = 0;
+	uint32_t high = 0;
 }
