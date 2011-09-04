@@ -168,9 +168,12 @@ int main(int argc, char *argv[])
 			quit = true;
 		}
 
-		bool keep = g->update((float)(frametime - old_frametime) / 1000.0,
+		// Update state & render current frame
+		bool keep = g->update((float)(frametime - old_frametime) / 1000.0f,
 			SDL_GetKeyState(NULL), screen);
 
+		// If the current GameLoop should not be kept,
+		// construct the next one, or exit
 		if (!keep)
 		{
 			std::unique_ptr<GameLoopFactory> f(g->nextLoop());
@@ -179,7 +182,86 @@ int main(int argc, char *argv[])
 			if (f.get() == 0)
 				break;
 			else
+			{
 				g = (*f)();
+
+				// Quick & dirty transition between the last
+				// frame from the old GameLoop & the first frame
+				// from the new one
+				SDL_Surface *old_sf = SDL_DisplayFormat(screen);
+				SDL_Surface *new_sf = SDL_DisplayFormat(screen);
+				g->update(0.0f, SDL_GetKeyState(NULL), new_sf);
+				float y = 0.0f;
+				frametime = SDL_GetTicks();
+				old_frametime = frametime;
+				while ((y - (float)P2_TILE_HEIGHT)
+					< (float)(P2_TILE_HEIGHT * P2_LEVEL_HEIGHT))
+				{
+					// Start by rendering the destination
+					SDL_BlitSurface(new_sf, NULL, screen, NULL);
+
+					// Move the bottom of the vertical wipe down
+					// based on time elapsed since last frame
+					y += 512.0f * ((float)(frametime - old_frametime) / 1000.0f);
+
+					// Top of the vertical wipe is two tile
+					// heights above the bottom - but not off-screen
+					float i = y - (float)(P2_TILE_HEIGHT * 2);
+					if (i < 0.0f)
+						i = 0.0f;
+
+					// Vertical wipe by rendering a series of
+					// single rows each 1 pixel high
+					for (; i <= y; ++i)
+					{
+						if ((Sint16)i >= (P2_TILE_HEIGHT * P2_LEVEL_HEIGHT))
+							break;
+
+						SDL_Rect src = {
+							0, (Sint16)i, P2_TILE_WIDTH * P2_LEVEL_WIDTH, 1
+						};
+						SDL_Rect dst = {
+							0, (Sint16)i, 0, 0
+						};
+
+						// Transparency ranges from 0 to 255 over the height
+						// of the wipe (2 tiles)
+						SDL_SetAlpha(old_sf, SDL_SRCALPHA,
+							255 - (Uint8)(((y - i) / (float)(P2_TILE_HEIGHT * 2)) * 255.0f));
+
+						SDL_BlitSurface(old_sf, &src, screen, &dst);
+					}
+
+					// Render the rest of the start surface
+					// opaque below the wipe
+					if (y < (float)(P2_TILE_HEIGHT * P2_LEVEL_HEIGHT))
+					{
+						SDL_SetAlpha(old_sf, 0, 0);
+						SDL_Rect src = {
+							0, (Sint16)y, P2_TILE_WIDTH * P2_LEVEL_WIDTH,
+							(Uint16)(old_sf->h - (int)y)
+						};
+						SDL_Rect dst = {
+							0, (Sint16)y, 0, 0
+						};
+						SDL_BlitSurface(old_sf, &src, screen, &dst);
+					}
+
+					SDL_Flip(screen);
+					if (delay)
+						SDL_Delay(20);
+
+					old_frametime = frametime;
+					frametime = SDL_GetTicks();
+				}
+
+				SDL_FreeSurface(old_sf);
+				SDL_FreeSurface(new_sf);
+
+				// Don't jump game state ahead by the time taken
+				// to perform the transition
+				frametime = SDL_GetTicks();
+			}
 		}
 
 		SDL_Flip(screen);
