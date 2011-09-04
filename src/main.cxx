@@ -31,10 +31,14 @@
 #include <cstdlib>
 
 // System
-#include <unistd.h>
+#ifndef WIN32
+#include <unistd.h> // For chdir
+#endif
 
 // Library
+#ifndef WIN32
 #include <getopt.h>
+#endif
 
 // Local
 #include "MainMenu.hxx"
@@ -53,8 +57,12 @@ int event_filter(const SDL_Event *event)
 
 int main(int argc, char *argv[])
 {
+#ifndef WIN32
 	//
-	// Command-line option parsing
+	// Command-line option parsing.
+	// getopt_long isn't available natively
+	// on Windows - but the options we support
+	// aren't terribly important.
 	//
 	
 	// Flags for argument-less option presence
@@ -112,6 +120,7 @@ int main(int argc, char *argv[])
 		std::cout << "Built with: " << P2_CONFIGURE_OPTS << std::endl;
 		return 0;
 	}
+#endif
 
 	//
 	// Initialise SDL
@@ -127,12 +136,21 @@ int main(int argc, char *argv[])
 	//
 	// Load in resources
 	//
+#ifdef WIN32
+	if (!SetCurrentDirectory("Data"))
+	{
+		std::cerr << "Could not change to data directory: "
+			<< GetLastError() << std::endl;
+		return 1;
+	}
+#else
 	if (chdir(P2_PKGDATADIR) < 0)
 	{
 		std::cerr << "Could not change working directory to \""
-			<< P2_PKGDATADIR << "\": " << strerror(errno);
+			<< P2_PKGDATADIR << "\": " << strerror(errno) << std::endl;
 		return 1;
 	}
+#endif
 	Alphabet a("Alphabet");
 	LevelSet l("LegoLev");
 
@@ -249,7 +267,7 @@ int main(int argc, char *argv[])
 
 					SDL_Flip(screen);
 					if (delay)
-						SDL_Delay(20);
+						SDL_Delay(10);
 
 					old_frametime = frametime;
 					frametime = SDL_GetTicks();
@@ -266,7 +284,7 @@ int main(int argc, char *argv[])
 
 		SDL_Flip(screen);
 		if (delay)
-			SDL_Delay(20);
+			SDL_Delay(10);
 
 		old_frametime = frametime;
 		frametime = SDL_GetTicks();
