@@ -190,7 +190,7 @@ std::unique_ptr<GameLoopFactory> InGame::nextLoop()
 	// It will do this either because the player should
 	// advance to the next level, or because the game has
 	// been paused.
-	if (m_advance && m_level < (m_levelset.size() - 1))
+	if (m_advance && (size_t)m_level < (m_levelset.size() - 1))
 	{
 		InGameFactory *f(new InGameFactory());
 		f->a = &m_alphabet;
