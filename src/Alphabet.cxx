@@ -123,7 +123,7 @@ Alphabet::Alphabet(const char *filename)
 SDL_Surface * Alphabet::renderWord(const std::string &word,
 	unsigned char r, unsigned char g, unsigned char b) const
 {
-	int indices[word.length()];
+	std::unique_ptr<int[]> indices(new int[word.length()]);
 	int height = 0;
 	int width = 0;
 	float fr = (float)(r) / 255.0f;
