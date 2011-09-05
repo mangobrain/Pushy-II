@@ -28,6 +28,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <new>
+#include <memory>
 
 // System
 
