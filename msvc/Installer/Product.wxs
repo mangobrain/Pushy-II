@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="733D1C3F-11AC-4801-A708-8520E3FBD4E5" Name="Pushy II" Language="1033" Version="0.0" Manufacturer="Philip Allison" UpgradeCode="B710F4BC-563D-4CA5-94F2-19F9C71FA5A8">
+		<Package InstallerVersion="300" Compressed="yes" />
+
+		<Media Id="1" Cabinet="media1.cab" EmbedCab="yes" />
+
+		<Directory Id="TARGETDIR" Name="SourceDir">
+      <!-- Component for the VC100 runtime distributable -->
+      <!-- Change the SourceFile value accordingly to find the merge module
+           if building the installer from a 32-bit version of Windows -->
+      <?ifdef IncludeVC100Redist ?>
+        <Merge Id="VCRedist" SourceFile="C:\Program Files (x86)\Common Files\Merge Modules\Microsoft_VC100_CRT_x86.msm" DiskId="1" Language="0" />
+      <?endif?>
+
+      <!-- Install a Start menu shortcut as per the WiX howto -->
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="AppFolder" Name="Pushy II">
+          <Component Id="MainExeShortcut" Guid="4CF4E907-CA7F-4CD5-8E98-DD68E4B1FF3F" >
+            <Shortcut Id="StartMenuEntry" Directory="ProgramMenuFolder" WorkingDirectory="INSTALLLOCATION" Name="Pushy II"
+                      Target="[INSTALLLOCATION]Pushy II.exe" />
+            <RemoveFolder Id="AppFolder" On="uninstall" />
+            <RegistryValue Root="HKCU" Key="Software\PushyII" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+			
+      <Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLLOCATION" Name="Pushy II">
+					<Component Id="MainExe" Guid="386B8B07-6CE5-4346-8D8C-25A211C82195">
+            <File Id="MainExeFile" Name="Pushy II.exe" Source="..\Release\Pushy II.exe" KeyPath="yes" />
+					</Component>
+          <Component Id="SdlDll" Guid="6BFB7BCC-88A9-4631-96F2-5B26487F5410">
+            <File Id="SdlDllFile" Name="SDL.dll" Source="..\Release\SDL.dll" KeyPath="yes" />
+          </Component>
+          <Directory Id="DataDirectory" Name="Data">
+            <Component Id="AlphabetData" Guid="705CB720-669E-4981-994A-AE5CECAA2EF7">
+              <File Id="AlphabetFile" Name="Alphabet" Source="..\Release\Data\Alphabet" KeyPath="yes" />
+            </Component>
+            <Component Id="LegoChtData" Guid="56C30350-702B-4FEE-A3EF-4D90E22C9280">
+              <File Id="LegoChtFile" Name="LegoCht" Source="..\Release\Data\LegoCht" KeyPath="yes" />
+            </Component>
+            <Component Id="LegoLevData" Guid="89BC33BE-44C5-485E-830E-AA1EA2B8A2A2">
+              <File Id="LegoLevFile" Name="LegoLev" Source="..\Release\Data\LegoLev" KeyPath="yes" />
+            </Component>
+            <Component Id="SpritesData" Guid="AC3B7CA1-1775-4802-8682-730F4D2F37CF">
+              <File Id="SpritesFile" Name="Sprites" Source="..\Release\Data\Sprites" KeyPath="yes" />
+            </Component>
+            <Component Id="YouData" Guid="96DDD0DD-85D1-4B69-8CA4-12997D161247">
+              <File Id="YouFile" Name="You" Source="..\Release\Data\You" />
+            </Component>
+          </Directory>
+				</Directory>
+			</Directory>
+		</Directory>
+
+		<Feature Id="Everything" Level="1">
+			<ComponentRef Id="MainExe" />
+      <ComponentRef Id="SdlDll" />
+      <ComponentRef Id="MainExeShortcut" />
+      <ComponentRef Id="AlphabetData" />
+      <ComponentRef Id="LegoChtData" />
+      <ComponentRef Id="LegoLevData" />
+      <ComponentRef Id="SpritesData" />
+      <ComponentRef Id="YouData" />
+      <?ifdef IncludeVC100Redist?>
+        <MergeRef Id="VCRedist" />
+      <?endif?>
+			
+			<!-- Note: The following ComponentGroupRef is required to pull in generated authoring from project references. -->
+			<ComponentGroupRef Id="Product.Generated" />
+		</Feature>
+	</Product>
+</Wix>

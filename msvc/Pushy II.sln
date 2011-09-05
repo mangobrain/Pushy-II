@@ -3,16 +3,54 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pushy II", "Pushy II.vcxproj", "{74498774-7482-458C-CD5E-6B403E435B16}"
 EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{CF838D9C-6CEA-4E0D-8392-77A78E77A710}"
+	ProjectSection(ProjectDependencies) = postProject
+		{74498774-7482-458C-CD5E-6B403E435B16} = {74498774-7482-458C-CD5E-6B403E435B16}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|Win32 = Debug|Win32
+		Debug|x86 = Debug|x86
+		Release inc. VC100 redistributable runtime|Mixed Platforms = Release inc. VC100 redistributable runtime|Mixed Platforms
+		Release inc. VC100 redistributable runtime|Win32 = Release inc. VC100 redistributable runtime|Win32
+		Release inc. VC100 redistributable runtime|x86 = Release inc. VC100 redistributable runtime|x86
+		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|Win32 = Release|Win32
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{74498774-7482-458C-CD5E-6B403E435B16}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{74498774-7482-458C-CD5E-6B403E435B16}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{74498774-7482-458C-CD5E-6B403E435B16}.Debug|Win32.ActiveCfg = Debug|Win32
 		{74498774-7482-458C-CD5E-6B403E435B16}.Debug|Win32.Build.0 = Debug|Win32
+		{74498774-7482-458C-CD5E-6B403E435B16}.Debug|x86.ActiveCfg = Debug|Win32
+		{74498774-7482-458C-CD5E-6B403E435B16}.Release inc. VC100 redistributable runtime|Mixed Platforms.ActiveCfg = Release|Win32
+		{74498774-7482-458C-CD5E-6B403E435B16}.Release inc. VC100 redistributable runtime|Mixed Platforms.Build.0 = Release|Win32
+		{74498774-7482-458C-CD5E-6B403E435B16}.Release inc. VC100 redistributable runtime|Win32.ActiveCfg = Release|Win32
+		{74498774-7482-458C-CD5E-6B403E435B16}.Release inc. VC100 redistributable runtime|Win32.Build.0 = Release|Win32
+		{74498774-7482-458C-CD5E-6B403E435B16}.Release inc. VC100 redistributable runtime|x86.ActiveCfg = Release|Win32
+		{74498774-7482-458C-CD5E-6B403E435B16}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{74498774-7482-458C-CD5E-6B403E435B16}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{74498774-7482-458C-CD5E-6B403E435B16}.Release|Win32.ActiveCfg = Release|Win32
 		{74498774-7482-458C-CD5E-6B403E435B16}.Release|Win32.Build.0 = Release|Win32
+		{74498774-7482-458C-CD5E-6B403E435B16}.Release|x86.ActiveCfg = Release|Win32
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Debug|Win32.ActiveCfg = Debug|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Debug|x86.ActiveCfg = Debug|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Debug|x86.Build.0 = Debug|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release inc. VC100 redistributable runtime|Mixed Platforms.ActiveCfg = Release inc. VC100 redistributable runtime|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release inc. VC100 redistributable runtime|Mixed Platforms.Build.0 = Release inc. VC100 redistributable runtime|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release inc. VC100 redistributable runtime|Win32.ActiveCfg = Release inc. VC100 redistributable runtime|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release inc. VC100 redistributable runtime|x86.ActiveCfg = Release inc. VC100 redistributable runtime|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release inc. VC100 redistributable runtime|x86.Build.0 = Release inc. VC100 redistributable runtime|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|Mixed Platforms.ActiveCfg = Debug|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|Mixed Platforms.Build.0 = Debug|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|Win32.ActiveCfg = Release|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|x86.ActiveCfg = Release|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
