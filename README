@@ -1,0 +1,3 @@
+This is a remake of the classic RISC OS game Pushy II.  It uses the level and graphics data from the original, used with kind permission of the author R. E. Williams, who retains copyright of said data (see COPYING for more info).
+
+To build from source, you will need a compiler which supports C++11 (GCC works with "-std=c++0x" in CXXFLAGS) and a copy of SDL.

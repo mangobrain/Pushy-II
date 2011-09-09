@@ -16,3 +16,4 @@
 #    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
 SUBDIRS = src data
+EXTRA_DIST = GPL3
