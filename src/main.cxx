@@ -36,12 +36,17 @@
 #endif
 
 // Library
-#ifndef WIN32
+#ifdef WIN32
+#include "SDL_syswm.h"
+#else
 #include <getopt.h>
 #endif
 
 // Local
 #include "MainMenu.hxx"
+#ifdef WIN32
+#include "resource.h"
+#endif
 
 
 //
@@ -133,6 +138,18 @@ int main(int argc, char *argv[])
 	}
 	atexit(SDL_Quit);
 
+#ifdef WIN32
+	HINSTANCE handle = GetModuleHandle(NULL);
+	HANDLE icon = LoadImage(handle, MAKEINTRESOURCE(IDI_ICON1), 1, 0, 0, LR_DEFAULTSIZE);
+
+	SDL_SysWMinfo wminfo;
+	SDL_VERSION(&wminfo.version)
+
+	HWND hwnd = wminfo.window;
+
+	SetClassLongPtr(hwnd, GCLP_HICON, (LONG_PTR) icon);
+#endif
+
 	//
 	// Load in resources
 	//
@@ -164,7 +181,9 @@ int main(int argc, char *argv[])
 		24, flags
 	);
 
+#ifndef WIN32
 	SDL_WM_SetIcon(l.getPlayerSprites()[2], NULL);
+#endif
 
 	// Did we actually get a hardware, double-buffered surface?
 	// If not, it probably isn't vsynced, and we should include
