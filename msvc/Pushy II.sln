@@ -46,8 +46,8 @@ Global
 		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release inc. VC100 redistributable runtime|Win32.ActiveCfg = Release inc. VC100 redistributable runtime|x86
 		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release inc. VC100 redistributable runtime|x86.ActiveCfg = Release inc. VC100 redistributable runtime|x86
 		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release inc. VC100 redistributable runtime|x86.Build.0 = Release inc. VC100 redistributable runtime|x86
-		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|Mixed Platforms.ActiveCfg = Debug|x86
-		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|Mixed Platforms.Build.0 = Debug|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|Mixed Platforms.Build.0 = Release|x86
 		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|Win32.ActiveCfg = Release|x86
 		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|x86.ActiveCfg = Release|x86
 		{CF838D9C-6CEA-4E0D-8392-77A78E77A710}.Release|x86.Build.0 = Release|x86

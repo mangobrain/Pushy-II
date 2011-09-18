@@ -116,6 +116,13 @@ copy $(ProjectDir)\..\data\* $(OutputPath)\Data</Command>
     <ClInclude Include="..\src\Score.hxx" />
     <ClInclude Include="..\src\TileSet.hxx" />
     <ClInclude Include="config.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Pushy II.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="pushy.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
