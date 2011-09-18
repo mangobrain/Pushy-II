@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Pushy II
+GenericName=Block-pushing Puzzle Game
+Comment=Remake of 1997 RISC OS block-pushing puzzle game Pushy II
+Icon=pushy
+Exec=@bindir@/pushy2
+Terminal=false
+Categories=Game;LogicGame;

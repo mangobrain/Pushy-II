@@ -1,4 +1,4 @@
-# Copyright 2010 Philip Allison
+# Copyright 2010-2011 Philip Allison
 
 #    This file is part of Pushy 2.
 #
@@ -15,5 +15,5 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
-SUBDIRS = src data
+SUBDIRS = src data icons
 EXTRA_DIST = GPL3

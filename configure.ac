@@ -1,4 +1,4 @@
-# Copyright 2010 Philip Allison
+# Copyright 2010-2011 Philip Allison
 
 #    This file is part of Pushy 2.
 #
@@ -55,10 +55,14 @@ AS_IF(
 	[AC_MSG_ERROR([We need getopt.h for option parsing!])]
 )
 
+dnl # Sed is used to parse pushy.desktop.in
+AC_PROG_SED
+
 dnl # All done.  Spit out the result.
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
 	data/Makefile
+	icons/Makefile
 ])
 AC_OUTPUT
