@@ -143,7 +143,8 @@ int main(int argc, char *argv[])
 	HANDLE icon = LoadImage(handle, MAKEINTRESOURCE(IDI_ICON1), 1, 0, 0, LR_DEFAULTSIZE);
 
 	SDL_SysWMinfo wminfo;
-	SDL_VERSION(&wminfo.version)
+	SDL_VERSION(&wminfo.version);
+	SDL_GetWMInfo(&wminfo);
 
 	HWND hwnd = wminfo.window;
 
