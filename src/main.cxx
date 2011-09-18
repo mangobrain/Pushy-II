@@ -164,6 +164,8 @@ int main(int argc, char *argv[])
 		24, flags
 	);
 
+	SDL_WM_SetIcon(l.getPlayerSprites()[2], NULL);
+
 	// Did we actually get a hardware, double-buffered surface?
 	// If not, it probably isn't vsynced, and we should include
 	// a sleep in the main loop
