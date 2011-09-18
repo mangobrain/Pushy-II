@@ -16,4 +16,4 @@
 #    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
 SUBDIRS = src data icons
-EXTRA_DIST = GPL3
+EXTRA_DIST = GPL3 msvc
