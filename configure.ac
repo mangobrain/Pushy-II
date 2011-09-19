@@ -21,7 +21,7 @@ dnl # so for now, we'll pretend it's the required version.
 AC_PREREQ([2.63])
 
 dnl # Initialise autoconf
-AC_INIT([Pushy 2], [0.0], [http://pushy2.mangobrain.co.uk/])
+AC_INIT([Pushy 2], [0.0], [http://pushy.mangobrain.co.uk/])
 AC_CONFIG_SRCDIR([src/main.cxx])
 AC_CONFIG_AUX_DIR([build-aux])
 
