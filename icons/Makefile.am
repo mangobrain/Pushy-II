@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
-EXTRA_DIST = pushy.svg pushy.desktop
+EXTRA_DIST = pushy.svg pushy.desktop.in
 
 dist-hook: $(SIZES:%=pushy-%.png)
 	cp -p pushy-*.png $(distdir)/
