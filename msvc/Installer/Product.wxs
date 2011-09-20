@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="733D1C3F-11AC-4801-A708-8520E3FBD4E5" Name="Pushy II" Language="1033" Version="0.0" Manufacturer="Philip Allison" UpgradeCode="B710F4BC-563D-4CA5-94F2-19F9C71FA5A8">
+	<Product Id="733D1C3F-11AC-4801-A708-8520E3FBD4E5" Name="Pushy II" Language="1033" Version="0.1" Manufacturer="Philip Allison" UpgradeCode="B710F4BC-563D-4CA5-94F2-19F9C71FA5A8">
 		<Package InstallerVersion="300" Compressed="yes" />
 
 		<Media Id="1" Cabinet="media1.cab" EmbedCab="yes" />
