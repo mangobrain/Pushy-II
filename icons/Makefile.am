@@ -17,17 +17,21 @@
 
 EXTRA_DIST = pushy.svg pushy.desktop.in
 
-dist-hook: $(SIZES:%=pushy-%.png)
-	cp -p pushy-*.png $(distdir)/
-
 # Sizes (NxN) at which to render and install application icon
 SIZES = 16 22 24 32 48 64 72 96 128
 
 # Rule for generating a particular size from original SVG.
-# Also do this at distribution time so we don't depend on RSVG being
-# present on users' systems.
+# Distribute these so we don't depend on RSVG being
+# present on users' systems.  Put the generated files in $(srcdir)
+# explicitly, so that we can always rely on them being present in
+# $(srcdir) rather than CWD when running install-data-local.
+# Writeability of $(srcdir) shouldn't be an issue for end users
+# since these files will already exist in an unpacked distribution.
 $(SIZES:%=pushy-%.png): pushy-%.png: pushy.svg
-	rsvg -w $* -h $* $< $@
+	rsvg -w $* -h $* $< $(srcdir)/$@
+
+BUILT_SOURCES = $(SIZES:%=pushy-%.png)
+dist_noinst_DATA = $(SIZES:%=pushy-%.png)
 
 # Use xdg-utils to install and uninstall pre-rendered icons.
 # I'd love to use it for the scalable icon as well, but
@@ -40,7 +44,7 @@ $(SIZES:%=pushy-%.png): pushy-%.png: pushy.svg
 install-data-local: $(SIZES:%=pushy-%.png) pushy.desktop
 	for i in $(SIZES); do \
 		xdg-icon-resource install --novendor --noupdate --size $$i \
-			pushy-$$i.png pushy; \
+			$(srcdir)/pushy-$$i.png pushy; \
 	done
 	xdg-icon-resource forceupdate
 	xdg-desktop-menu install --novendor pushy.desktop
@@ -55,8 +59,9 @@ uninstall-local:
 # Pre-rendered icons are considered built by the maintainer, because
 # they are generated (not handmade) but distributed.  Delete them during
 # maintainerclean.
-maintainer-clean-local:
-	rm -f pushy-*.png
+MAINTAINERCLEANFILES = $(SIZES:%=pushy-%.png)
+
+CLEANFILES = pushy.desktop
 
 # Rule for generating .desktop file from .desktop.in.
 # This converts the "bindir" placeholder in the ".in" file
