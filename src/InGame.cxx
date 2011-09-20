@@ -36,6 +36,7 @@
 #include "InGame.hxx"
 #include "PauseMenu.hxx"
 #include "Score.hxx"
+#include "MainMenu.hxx"
 
 
 //
@@ -190,13 +191,23 @@ std::unique_ptr<GameLoopFactory> InGame::nextLoop()
 	// It will do this either because the player should
 	// advance to the next level, or because the game has
 	// been paused.
-	if (m_advance && (size_t)m_level < (m_levelset.size() - 1))
+	if (m_advance)
 	{
-		InGameFactory *f(new InGameFactory());
+		GameLoopFactory *f = 0;
+		if ((size_t)(m_level + 1) == m_levelset.size())
+		{
+			// For now, if the player has finished the last
+			// level, just go back to the main menu.
+			f = new MainMenuFactory();
+		}
+		else
+		{
+			f = new InGameFactory();
+			((InGameFactory*)f)->level = m_level + 1;
+			((InGameFactory*)f)->score = m_score;
+		}
 		f->a = &m_alphabet;
 		f->l = &m_levelset;
-		f->level = m_level + 1;
-		f->score = m_score;
 		return std::unique_ptr<GameLoopFactory>(f);
 	}
 	else
