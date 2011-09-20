@@ -55,8 +55,43 @@ AS_IF(
 	[AC_MSG_ERROR([We need getopt.h for option parsing!])]
 )
 
-dnl # Sed is used to parse pushy.desktop.in
-AC_PROG_SED
+dnl # Installation of icons and a .desktop file is optional,
+dnl # because technically it might involve installing files
+dnl # outside the configured installation prefix.
+AC_ARG_WITH(
+	[freedesktop],
+	[AS_HELP_STRING([--with-freedesktop], [Install desktop menu entry.  This is disabled by default, as it uses xdg-utils, which may install files outside PREFIX.])],
+	[
+		AS_IF(
+			[test "x$withval" = "xyes"],
+			[xdg=true],
+			[xdg=false]
+		)
+	],
+	[xdg=false]
+)
+AM_CONDITIONAL([XDG], [test "x$xdg" = "xtrue"])
+AS_IF(
+	[test "x$xdg" = "xtrue"],
+	[
+		dnl # Sed is used to parse pushy.desktop.in
+		AC_PROG_SED
+
+		dnl # xdg-utils are used to install icons and .desktop file
+		AC_PATH_PROG([XDG_IR], [xdg-icon-resource], [notfound])
+		AC_PATH_PROG([XDG_DM], [xdg-desktop-menu], [notfound])
+
+		AS_IF(
+			[test "x$XDG_IR" = "xnotfound"],
+			[AC_MSG_ERROR([Could not find xdg-icon-resource in PATH])]
+		)
+
+		AS_IF(
+			[test "x$XDG_DM" = "xnotfound"],
+			[AC_MSG_ERROR([Could not find xdg-desktop-menu in PATH])]
+		)
+	]
+)
 
 dnl # All done.  Spit out the result.
 AC_CONFIG_FILES([

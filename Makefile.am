@@ -15,5 +15,9 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Pushy 2.  If not, see <http://www.gnu.org/licenses/>.
 
-SUBDIRS = src data icons
+if XDG
+MAYBE_ICONS = icons
+endif
+
+SUBDIRS = src data $(MAYBE_ICONS)
 EXTRA_DIST = GPL3 msvc

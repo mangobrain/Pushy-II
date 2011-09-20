@@ -43,18 +43,18 @@ dist_noinst_DATA = $(SIZES:%=pushy-%.png)
 
 install-data-local: $(SIZES:%=pushy-%.png) pushy.desktop
 	for i in $(SIZES); do \
-		xdg-icon-resource install --novendor --noupdate --size $$i \
+		$(XDG_IR) install --novendor --noupdate --size $$i \
 			$(srcdir)/pushy-$$i.png pushy; \
 	done
-	xdg-icon-resource forceupdate
-	xdg-desktop-menu install --novendor pushy.desktop
+	$(XDG_IR) forceupdate
+	$(XDG_DM) install --novendor pushy.desktop
 
 uninstall-local:
 	for i in $(SIZES); do \
-		xdg-icon-resource uninstall --noupdate --size $$i pushy; \
+		$(XDG_IR) uninstall --noupdate --size $$i pushy; \
 	done
-	xdg-icon-resource forceupdate
-	xdg-desktop-menu uninstall pushy.desktop
+	$(XDG_IR) forceupdate
+	$(XDG_DM) uninstall pushy.desktop
 
 # Pre-rendered icons are considered built by the maintainer, because
 # they are generated (not handmade) but distributed.  Delete them during
