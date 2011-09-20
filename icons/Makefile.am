@@ -26,7 +26,7 @@ SIZES = 16 22 24 32 48 64 72 96 128
 # Rule for generating a particular size from original SVG.
 # Also do this at distribution time so we don't depend on RSVG being
 # present on users' systems.
-pushy-%.png: pushy.svg
+$(SIZES:%=pushy-%.png): pushy-%.png: pushy.svg
 	rsvg -w $* -h $* $< $@
 
 # Use xdg-utils to install and uninstall pre-rendered icons.
